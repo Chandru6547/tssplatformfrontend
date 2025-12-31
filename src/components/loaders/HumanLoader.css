@@ -1,0 +1,109 @@
+/* ---------- WRAPPER ---------- */
+.human-loader-wrapper {
+  height: 100vh;
+  margin-left: 80px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background: linear-gradient(to bottom, #f7f9fc, #eef2f7);
+}
+
+/* ---------- CODER ---------- */
+.coder {
+  position: relative;
+  width: 80px;
+  height: 100px;
+}
+
+/* Head */
+.coder .head {
+  width: 20px;
+  height: 20px;
+  background: #6366f1;
+  border-radius: 50%;
+  margin: 0 auto;
+}
+
+/* Body */
+.coder .body {
+  width: 6px;
+  height: 28px;
+  background: #374151;
+  margin: 4px auto 0;
+}
+
+/* Laptop */
+.coder .laptop {
+  width: 48px;
+  height: 10px;
+  background: #111827;
+  margin: 10px auto 0;
+  border-radius: 3px;
+}
+
+/* Hands typing */
+.coder .hands {
+  position: absolute;
+  top: 46px;
+  left: 16px;
+  width: 48px;
+  height: 4px;
+  background: #374151;
+  animation: typing 0.4s infinite alternate;
+}
+
+/* ---------- TEXT ---------- */
+.loader-text {
+  margin-top: 18px;
+  color: #374151;
+  font-size: 15px;
+}
+
+/* Dots */
+.dots i {
+  opacity: 0;
+  animation: dots 1.4s infinite;
+}
+
+.dots i:nth-child(1) { animation-delay: 0s; }
+.dots i:nth-child(2) { animation-delay: 0.3s; }
+.dots i:nth-child(3) { animation-delay: 0.6s; }
+
+/* ---------- SUCCESS ---------- */
+.success-check {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: #22c55e;
+  color: white;
+  font-size: 36px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  animation: pop 0.4s ease;
+}
+
+.success-text {
+  margin-top: 14px;
+  font-size: 16px;
+  color: #166534;
+  font-weight: 500;
+}
+
+/* ---------- ANIMATIONS ---------- */
+@keyframes typing {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(6px); }
+}
+
+@keyframes dots {
+  0% { opacity: 0; }
+  50% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+@keyframes pop {
+  0% { transform: scale(0.6); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
