@@ -2,8 +2,8 @@ import { useEffect, useState } from "react";
 import "./HumanLoader.css";
 
 export default function HumanLoader({
-  loadingText = "Your problems are being prepared",
-  successText = "Ready!",
+  loadingText = "Building your code",
+  successText = "Build successful",
   duration = 2000
 }) {
   const [done, setDone] = useState(false);
@@ -20,12 +20,11 @@ export default function HumanLoader({
     <div className="human-loader-wrapper">
       {!done ? (
         <>
-          {/* CODING STATE */}
-          <div className="coder">
-            <div className="head"></div>
-            <div className="body"></div>
-            <div className="laptop"></div>
-            <div className="hands"></div>
+          {/* CODE BUILD STATE */}
+          <div className="code-loader">
+            <span>{"{"}</span>
+            <span>{"}"}</span>
+            <span>{"< />"}</span>
           </div>
 
           <p className="loader-text">

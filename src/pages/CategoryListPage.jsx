@@ -92,7 +92,11 @@ export default function CategoryListPage() {
 
   /* ---------- LOADER ---------- */
   if (pageLoading) {
-    return <HumanLoader text="Loading categories" />;
+    return <HumanLoader
+            loadingText="Preparing categories"
+            successText="Ready to practice!"
+            duration={2000}
+          />;
   }
 
   return (

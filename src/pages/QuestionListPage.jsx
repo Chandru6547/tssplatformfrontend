@@ -1,17 +1,23 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { getToken, logout } from "../utils/auth";
+import HumanLoader from "../components/loaders/HumanLoader";
 import "./QuestionListPage.css";
 
 export default function QuestionListPage() {
   const { categoryId } = useParams();
   const [questions, setQuestions] = useState([]);
-  const [solvedMap, setSolvedMap] = useState({}); // 🔥 questionId -> true/false
+  const [solvedMap, setSolvedMap] = useState({});
+  const [pageLoading, setPageLoading] = useState(true);
+
   const navigate = useNavigate();
 
-  /* ---------- FETCH QUESTIONS ---------- */
+  /* ---------- FETCH QUESTIONS + SOLVED STATUS ---------- */
   useEffect(() => {
     const fetchQuestions = async () => {
+      const startTime = Date.now();
+      setPageLoading(true);
+
       try {
         const res = await fetch(
           `https://tssplatform.onrender.com/questions?categoryId=${categoryId}`,
@@ -31,10 +37,15 @@ export default function QuestionListPage() {
         const data = await res.json();
         setQuestions(data);
 
-        // 🔥 After questions → check solved status
-        checkSolvedStatus(data);
+        // 🔥 Check solved status after questions
+        await checkSolvedStatus(data);
       } catch (err) {
         console.error("Failed to fetch questions", err);
+      } finally {
+        const elapsed = Date.now() - startTime;
+        const remaining = Math.max(2000 - elapsed, 0);
+
+        setTimeout(() => setPageLoading(false), remaining);
       }
     };
 
@@ -69,6 +80,17 @@ export default function QuestionListPage() {
 
     setSolvedMap(solvedStatus);
   };
+
+  /* ---------- LOADER ---------- */
+  if (pageLoading) {
+    return (
+      <HumanLoader
+        loadingText="Preparing problems"
+        successText="Ready to practice!"
+        duration={2000}
+      />
+    );
+  }
 
   return (
     <div className="ql-page">

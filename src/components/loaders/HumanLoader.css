@@ -9,53 +9,35 @@
   background: linear-gradient(to bottom, #f7f9fc, #eef2f7);
 }
 
-/* ---------- CODER ---------- */
-.coder {
-  position: relative;
-  width: 80px;
-  height: 100px;
+/* ---------- CODE LOADER ---------- */
+.code-loader {
+  display: flex;
+  gap: 16px;
+  font-size: 28px;
+  font-weight: 600;
+  color: #6366f1;
 }
 
-/* Head */
-.coder .head {
-  width: 20px;
-  height: 20px;
-  background: #6366f1;
-  border-radius: 50%;
-  margin: 0 auto;
+.code-loader span {
+  opacity: 0;
+  animation: codePop 1.2s infinite;
 }
 
-/* Body */
-.coder .body {
-  width: 6px;
-  height: 28px;
-  background: #374151;
-  margin: 4px auto 0;
+.code-loader span:nth-child(1) {
+  animation-delay: 0s;
 }
 
-/* Laptop */
-.coder .laptop {
-  width: 48px;
-  height: 10px;
-  background: #111827;
-  margin: 10px auto 0;
-  border-radius: 3px;
+.code-loader span:nth-child(2) {
+  animation-delay: 0.2s;
 }
 
-/* Hands typing */
-.coder .hands {
-  position: absolute;
-  top: 46px;
-  left: 16px;
-  width: 48px;
-  height: 4px;
-  background: #374151;
-  animation: typing 0.4s infinite alternate;
+.code-loader span:nth-child(3) {
+  animation-delay: 0.4s;
 }
 
 /* ---------- TEXT ---------- */
 .loader-text {
-  margin-top: 18px;
+  margin-top: 20px;
   color: #374151;
   font-size: 15px;
 }
@@ -92,9 +74,10 @@
 }
 
 /* ---------- ANIMATIONS ---------- */
-@keyframes typing {
-  0% { transform: translateX(0); }
-  100% { transform: translateX(6px); }
+@keyframes codePop {
+  0% { opacity: 0; transform: translateY(10px); }
+  40% { opacity: 1; transform: translateY(0); }
+  100% { opacity: 0; transform: translateY(-10px); }
 }
 
 @keyframes dots {

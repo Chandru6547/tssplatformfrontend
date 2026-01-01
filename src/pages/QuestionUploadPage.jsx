@@ -240,7 +240,7 @@ export default function QuestionUploadPage() {
 
         <button className="link-btn"
           onClick={() => setSampleTestcases([...sampleTestcases, { input: "", output: "" }])}>
-          + Add Sample Testcase
+          Add Sample Testcase
         </button>
 
         {/* HIDDEN TESTCASES */}
@@ -257,7 +257,7 @@ export default function QuestionUploadPage() {
 
         <button className="link-btn"
           onClick={() => setHiddenTestcases([...hiddenTestcases, { input: "", output: "" }])}>
-          + Add Hidden Testcase
+          Add Hidden Testcase
         </button>
 
         {/* SUBMIT */}
