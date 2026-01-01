@@ -16,7 +16,7 @@ export default function MCQStudentPage() {
 
     try {
       const res = await fetch(
-        "https://p2fnsr71-3000.inc1.devtunnels.ms/api/mcqs/mcqs-student",
+        "https://tssplatform.onrender.com/api/mcqs/mcqs-student",
         {
           method: "POST",
           headers: {

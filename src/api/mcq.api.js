@@ -1,4 +1,4 @@
-const BASE_URL = "https://p2fnsr71-3000.inc1.devtunnels.ms/api/mcqs";
+const BASE_URL = "https://tssplatform.onrender.com/api/mcqs";
 // change to Render URL later
 
 export const createMCQ = async (data) => {

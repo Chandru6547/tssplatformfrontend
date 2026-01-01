@@ -45,12 +45,14 @@ export default function Navbar() {
           <span>Practice</span>
         </Link>
 
-         <Link to="/mcqs/student" className={`nav-item ${isActive("/mcqs")}`}>
-          <FaQuestionCircle />
-          <span>MCQs</span>
-        </Link>
-
-        {/* 📝 MCQs (Students + Admins) */}
+        {role  === "student" && (
+          <>
+            <Link to="/mcqs/student" className={`nav-item ${isActive("/mcqs")}`}>
+              <FaQuestionCircle />
+              <span>MCQs</span>
+            </Link>
+          </>
+        )}
        
 
         {/* 🔐 ADMIN ONLY */}
