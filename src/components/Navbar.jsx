@@ -5,7 +5,9 @@ import {
   FaUpload,
   FaUserShield,
   FaSignOutAlt,
-  FaChartBar
+  FaChartBar,
+  FaQuestionCircle,
+  FaClipboardList
 } from "react-icons/fa";
 import { logout, isAuthenticated, getRole } from "../utils/auth";
 import "./Navbar.css";
@@ -43,9 +45,31 @@ export default function Navbar() {
           <span>Practice</span>
         </Link>
 
+         <Link to="/mcqs/student" className={`nav-item ${isActive("/mcqs")}`}>
+          <FaQuestionCircle />
+          <span>MCQs</span>
+        </Link>
+
+        {/* 📝 MCQs (Students + Admins) */}
+       
+
         {/* 🔐 ADMIN ONLY */}
         {role === "admin" && (
           <>
+            {/* Create MCQ */}
+             <Link to="/mcqs" className={`nav-item ${isActive("/mcqs")}`}>
+                <FaQuestionCircle />
+                <span>MCQs</span>
+            </Link>
+            <Link
+              to="/mcqs/create"
+              className={`nav-item ${isActive("/mcqs/create")}`}
+            >
+              <FaClipboardList />
+              <span>Create MCQ</span>
+            </Link>
+
+            {/* Upload Coding Question */}
             <Link
               to="/admin/upload"
               className={`nav-item ${isActive("/admin/upload")}`}
@@ -54,6 +78,7 @@ export default function Navbar() {
               <span>Upload Question</span>
             </Link>
 
+            {/* Create Admin */}
             <Link
               to="/admin/create"
               className={`nav-item ${isActive("/admin/create")}`}
@@ -62,7 +87,7 @@ export default function Navbar() {
               <span>Create Admin</span>
             </Link>
 
-            {/* 📊 REPORTS */}
+            {/* Reports */}
             <Link
               to="/admin/reports"
               className={`nav-item ${isActive("/admin/reports")}`}

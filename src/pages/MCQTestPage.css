@@ -1,0 +1,188 @@
+/* ---------- BASE ---------- */
+.exam-wrapper {
+  height: 100vh;
+  background: linear-gradient(120deg, #f9fafb, #eef2ff);
+  transition: filter 0.3s ease;
+}
+
+.exam-wrapper.blur {
+  filter: blur(6px);
+}
+
+/* ---------- PROGRESS ---------- */
+.progress-bar {
+  height: 6px;
+  background: #e5e7eb;
+}
+
+.progress-bar div {
+  height: 100%;
+  background: linear-gradient(90deg, #2563eb, #22c55e);
+  transition: width 0.4s ease;
+}
+
+/* ---------- LAYOUT ---------- */
+.exam-container {
+  display: flex;
+  height: calc(100vh - 6px);
+}
+
+/* QUESTION */
+.question-panel {
+  width: 50%;
+  padding: 60px;
+  background: white;
+  border-right: 1px solid #e5e7eb;
+}
+
+.question-count {
+  color: #2563eb;
+  font-weight: 600;
+}
+
+.question-panel h2 {
+  margin-top: 30px;
+  font-size: 28px;
+  line-height: 1.4;
+}
+
+/* OPTIONS */
+.options-panel {
+  width: 50%;
+  padding: 60px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.option-tile {
+  display: flex;
+  gap: 16px;
+  padding: 18px;
+  border-radius: 14px;
+  border: 2px solid #e5e7eb;
+  margin-bottom: 16px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  background: white;
+}
+
+.option-tile:hover {
+  transform: translateY(-2px);
+  border-color: #2563eb;
+  box-shadow: 0 10px 20px rgba(0,0,0,0.08);
+}
+
+.option-tile.selected {
+  background: #eef2ff;
+  border-color: #2563eb;
+}
+
+.opt-circle {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: #2563eb;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+}
+
+/* NAV */
+.nav-buttons {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 30px;
+}
+
+.nav-buttons button {
+  padding: 12px 24px;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  font-size: 15px;
+}
+
+.nav-buttons button:disabled {
+  background: #d1d5db;
+  cursor: not-allowed;
+}
+
+.submit {
+  background: #16a34a;
+  color: white;
+}
+
+/* ---------- ANIMATION ---------- */
+.animate-slide {
+  animation: slideFade 0.4s ease;
+}
+
+@keyframes slideFade {
+  from {
+    opacity: 0;
+    transform: translateX(-15px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* ---------- RESULT MODAL ---------- */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.45);
+  backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.result-modal {
+  background: white;
+  padding: 40px;
+  border-radius: 16px;
+  width: 360px;
+  text-align: center;
+  box-shadow: 0 30px 60px rgba(0,0,0,0.25);
+}
+
+.result-modal h2 {
+  margin-bottom: 10px;
+}
+
+.result-modal button {
+  margin-top: 20px;
+  padding: 10px 20px;
+  background: #2563eb;
+  color: white;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+}
+.exam-header {
+  display: flex;
+  justify-content: space-between;
+  padding: 14px 30px;
+  background: #111827;
+  color: white;
+  font-weight: 600;
+}
+
+.proctor-video {
+  position: fixed;
+  bottom: 16px;
+  right: 16px;
+  width: 160px;
+  height: 120px;
+  border-radius: 8px;
+  border: 2px solid #22c55e;
+  object-fit: cover;
+  z-index: 9999;
+}
+
+

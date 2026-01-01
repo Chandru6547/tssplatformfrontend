@@ -13,7 +13,12 @@ import CreateAdminPage from "./pages/CreateAdminPage";
 import ProtectedRoute from "./components/ProtectedRoute";
 import BatchListPage from "./pages/BatchListPage";
 import SubmissionListPage from "./pages/SubmissionListPage";
+import MCQListPage from "./pages/MCQListPage";
+import MCQCreatePage from "./pages/MCQCreatePage";
+import MCQStudentPage from "./pages/MCQStudentPage";
+import MCQTestPage from "./pages/MCQTestPage";
 import "./App.css";
+
 export default function App() {
   const location = useLocation();
   const hideNavbar = location.pathname === "/login";
@@ -89,6 +94,15 @@ export default function App() {
               />
 
               <Route
+                path="/mcqs/test/:mcqId"
+                element={
+                  <ProtectedRoute>
+                    <MCQTestPage />
+                  </ProtectedRoute>
+                }
+              />
+
+              <Route
                 path="/admin/create"
                 element={
                   <ProtectedRoute allowedRoles={["admin"]}>
@@ -97,6 +111,24 @@ export default function App() {
                 }
               />
               
+              <Route path="/mcqs" element={
+                <ProtectedRoute>
+                  <MCQListPage />
+                </ProtectedRoute>
+              } />
+
+              <Route path="/mcqs/create" element={
+                <ProtectedRoute>
+                  <MCQCreatePage />
+                </ProtectedRoute>
+              } />
+              
+              <Route path="/mcqs/student" element={
+                <ProtectedRoute>
+                  <MCQStudentPage />
+                </ProtectedRoute>
+              } />
+
               <Route path="/admin/reports" element={<CampusListPage />} />
               <Route path="/years" element={<YearsListPage />} />
               <Route path="/submissions" element={<SubmissionListPage />} />

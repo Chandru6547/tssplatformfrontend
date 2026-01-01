@@ -1,0 +1,115 @@
+.mcq-list-page {
+  padding: 24px;
+}
+
+.page-header h2 {
+  margin-bottom: 4px;
+}
+
+.page-header p {
+  color: #6b7280;
+  margin-bottom: 20px;
+}
+
+/* Filters */
+.filter-bar {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+.filter-bar input {
+  padding: 8px 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+}
+
+.filter-bar button {
+  padding: 8px 14px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  background: #2563eb;
+  color: white;
+}
+
+.filter-bar .reset {
+  background: #6b7280;
+}
+
+/* Status */
+.status-text {
+  text-align: center;
+  color: #6b7280;
+  margin-top: 30px;
+}
+
+/* MCQ Card */
+.mcq-card {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.mcq-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.mcq-header h3 {
+  margin: 0;
+}
+
+.tag {
+  background: #e0e7ff;
+  color: #3730a3;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  margin-left: 8px;
+}
+
+.count {
+  font-size: 12px;
+  color: #6b7280;
+  margin-left: 10px;
+}
+
+/* Actions */
+.mcq-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.mcq-actions button {
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.mcq-actions .view {
+  background: #f3f4f6;
+}
+
+.mcq-actions .delete {
+  background: #ef4444;
+  color: white;
+}
+
+/* Questions */
+.mcq-questions {
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid #e5e7eb;
+}
+
+.question-item {
+  padding: 6px 0;
+  font-size: 14px;
+}

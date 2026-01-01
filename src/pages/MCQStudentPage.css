@@ -1,0 +1,13 @@
+/* Reuse CourseListPage styles */
+@import "./CourseListPage.css";
+
+.mcq-meta {
+  font-size: 13px;
+  color: #6b7280;
+  margin: 6px 0 12px;
+}
+.mcq-question {
+  font-size: 15px;
+  color: #111827;
+  margin-bottom: 12px;
+}
