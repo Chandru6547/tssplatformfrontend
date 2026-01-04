@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { getToken, logout } from "../utils/auth";
+import { getToken, logout, getRole } from "../utils/auth";
 import HumanLoader from "../components/loaders/HumanLoader";
 import "./QuestionListPage.css";
 
@@ -127,6 +127,14 @@ export default function QuestionListPage() {
                 </div>
 
                 <div className="ql-card-footer">
+                  {getRole() === "admin" && (
+                    <button
+                      className="ql-edit-btn"
+                      onClick={() => navigate(`/admin/edit/${q._id}`)}
+                    >
+                      ✏️ Edit
+                    </button>
+                  )}
                   <button
                     className={`ql-solve-btn ${isSolved ? "solved-btn" : ""}`}
                     onClick={() => navigate(`/questions/${q._id}`)}

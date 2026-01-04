@@ -1,14 +1,19 @@
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import {
   FaCode,
-  FaList,
-  FaUpload,
-  FaUserShield,
-  FaSignOutAlt,
-  FaChartBar,
+  FaBookOpen,
   FaQuestionCircle,
-  FaClipboardList
+  FaRobot,
+  FaFileAlt,
+  FaCalendarAlt,
+  FaTrophy,
+  FaTasks,
+  FaPlusSquare,
+  FaUpload,
+  FaChartLine,
+  FaSignOutAlt
 } from "react-icons/fa";
+
 import { logout, isAuthenticated, getRole } from "../utils/auth";
 import "./Navbar.css";
 
@@ -27,51 +32,75 @@ export default function Navbar() {
 
   return (
     <aside className="navbar">
+      {/* ---------- HEADER ---------- */}
       <div className="navbar-header">
         <span className="logo-icon">⚡</span>
-        <span className="logo-text">TSS Student's Hub</span>
+        <span className="logo-text">TSS Student&apos;s Hub</span>
       </div>
 
+      {/* ---------- MENU ---------- */}
       <nav className="navbar-menu">
         {/* Compiler */}
         <Link to="/" className={`nav-item ${isActive("/")}`}>
           <FaCode />
-          <span>Compiler</span>
+          <span>IDE</span>
         </Link>
 
         {/* Practice */}
         <Link to="/courses" className={`nav-item ${isActive("/courses")}`}>
-          <FaList />
+          <FaBookOpen />
           <span>Practice</span>
         </Link>
 
-        {role  === "student" && (
+        {/* ================= STUDENT ================= */}
+        {role === "student" && (
           <>
-            <Link to="/mcqs/student" className={`nav-item ${isActive("/mcqs")}`}>
+            <Link
+              to="/mcqs/student"
+              className={`nav-item ${isActive("/mcqs")}`}
+            >
               <FaQuestionCircle />
               <span>MCQs</span>
             </Link>
+
+            <Link to="/comingsoon" className="nav-item">
+              <FaRobot />
+              <span>AI Interview</span>
+            </Link>
+
+            <Link to="/comingsoon" className="nav-item">
+              <FaFileAlt />
+              <span>AI Resume</span>
+            </Link>
+
+            <Link to="/comingsoon" className="nav-item">
+              <FaCalendarAlt />
+              <span>Meeting Scheduler</span>
+            </Link>
+
+            <Link to="/comingsoon" className="nav-item">
+              <FaTrophy />
+              <span>Contest</span>
+            </Link>
           </>
         )}
-       
 
-        {/* 🔐 ADMIN ONLY */}
+        {/* ================= ADMIN ================= */}
         {role === "admin" && (
           <>
-            {/* Create MCQ */}
-             <Link to="/mcqs" className={`nav-item ${isActive("/mcqs")}`}>
-                <FaQuestionCircle />
-                <span>MCQs</span>
+            <Link to="/mcqs" className={`nav-item ${isActive("/mcqs")}`}>
+              <FaTasks />
+              <span>MCQs</span>
             </Link>
+
             <Link
               to="/mcqs/create"
               className={`nav-item ${isActive("/mcqs/create")}`}
             >
-              <FaClipboardList />
+              <FaPlusSquare />
               <span>Create MCQ</span>
             </Link>
 
-            {/* Upload Coding Question */}
             <Link
               to="/admin/upload"
               className={`nav-item ${isActive("/admin/upload")}`}
@@ -80,27 +109,18 @@ export default function Navbar() {
               <span>Upload Question</span>
             </Link>
 
-            {/* Create Admin */}
-            <Link
-              to="/admin/create"
-              className={`nav-item ${isActive("/admin/create")}`}
-            >
-              <FaUserShield />
-              <span>Create Admin</span>
-            </Link>
-
-            {/* Reports */}
             <Link
               to="/admin/reports"
               className={`nav-item ${isActive("/admin/reports")}`}
             >
-              <FaChartBar />
+              <FaChartLine />
               <span>Reports</span>
             </Link>
           </>
         )}
       </nav>
 
+      {/* ---------- FOOTER ---------- */}
       <div className="navbar-footer">
         {isAuthenticated() && (
           <button className="nav-item logout" onClick={handleLogout}>

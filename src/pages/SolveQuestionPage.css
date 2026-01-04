@@ -29,8 +29,6 @@
 }
 
 .question-header {
-  position: sticky;
-  top: 0;
   background: #ffffff;
   padding-bottom: 12px;
   border-bottom: 1px solid #e5e7eb;

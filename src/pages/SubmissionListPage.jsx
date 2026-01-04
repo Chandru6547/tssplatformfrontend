@@ -96,11 +96,25 @@ export default function SubmissionListPage() {
     <div className="submission-page">
       {/* HEADER */}
       <div className="submission-header">
-        <h2>{college}</h2>
-        <div className="meta">
-          <span>Year {year}</span>
-          <span>Batch {batch}</span>
+        <div>
+          <h2>{college}</h2>
+          <div className="meta">
+            <span>Year {year}</span>
+            <span>Batch {batch}</span>
+          </div>
         </div>
+
+        {/* ✅ NEW BUTTON */}
+        <button
+          className="mcq-report-btn"
+          onClick={() =>
+            navigate("/report/mcqs", {
+              state: { college, year, batch }
+            })
+          }
+        >
+          View MCQs Report
+        </button>
       </div>
 
       {/* STUDENT TABLE */}

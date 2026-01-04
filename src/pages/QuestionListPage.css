@@ -120,7 +120,7 @@
 .ql-card-footer {
   margin-top: 20px;
   display: flex;
-  justify-content: flex-end;
+  justify-content: space-between;
 }
 
 /* ===========================
@@ -148,6 +148,24 @@
 
 .ql-solve-btn:active {
   transform: scale(0.97);
+}
+
+.ql-edit-btn {
+  background: #f59e0b;
+  color: #ffffff;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-right: 10px;
+  transition: background 0.2s ease, transform 0.1s ease;
+}
+
+.ql-edit-btn:hover {
+  background: #d97706;
+  transform: translateY(-1px);
 }
 
 /* ===========================

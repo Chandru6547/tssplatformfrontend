@@ -1,14 +1,16 @@
 import { useEffect, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import Quill from "quill";
 import "quill/dist/quill.snow.css";
 import "./QuestionUploadPage.css";
 import { getToken, logout } from "../utils/auth";
+import { log } from "three/src/nodes/TSL.js";
 
 export default function QuestionUploadPage() {
   const quillContainerRef = useRef(null);
   const quillInstanceRef = useRef(null);
   const navigate = useNavigate();
+  const { questionId } = useParams();
 
   /* ---------------- BASIC FIELDS ---------------- */
   const [title, setTitle] = useState("");
@@ -57,6 +59,37 @@ export default function QuestionUploadPage() {
       });
     }
   }, []);
+
+  /* ---------------- FETCH QUESTION FOR EDITING ---------------- */
+  useEffect(() => {
+    if (!questionId) return;
+
+    fetch(`https://tssplatform.onrender.com/questionsforadmin/${questionId}`, {
+      headers: {
+        Authorization: `Bearer ${getToken()}`
+      }
+    })
+      .then(res => res.json())
+      .then(question => {
+        console.log(question);
+        
+        setTitle(question.title);
+        setDifficulty(question.difficulty);
+        setDescription(question.description);
+        setCourseId(question.courseId);
+        setCategoryId(question.categoryId);
+        setSampleTestcases(question.sampleTestcases || [{ input: "", output: "" }]);
+        setHiddenTestcases(question.hiddenTestcases || [{ input: "", output: "" }]);
+
+        // Set Quill content after it's initialized
+        setTimeout(() => {
+          if (quillInstanceRef.current) {
+            quillInstanceRef.current.root.innerHTML = question.description;
+          }
+        }, 100);
+      })
+      .catch(console.error);
+  }, [questionId]);
 
   /* ---------------- FETCH COURSES ---------------- */
   useEffect(() => {
@@ -123,8 +156,12 @@ export default function QuestionUploadPage() {
     setLoading(true);
 
     try {
-      const res = await fetch("https://tssplatform.onrender.com/questions", {
-        method: "POST",
+      const isEditing = !!questionId;
+      const url = isEditing ? `https://tssplatform.onrender.com/questions/${questionId}` : "https://tssplatform.onrender.com/questions";
+      const method = isEditing ? "PUT" : "POST";
+
+      const res = await fetch(url, {
+        method,
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${getToken()}`
@@ -150,18 +187,29 @@ export default function QuestionUploadPage() {
 
       setShowPopup(true);
 
-      /* RESET FORM */
+      if (!isEditing) {
+        /* RESET FORM */
+        setTitle("");
+        setDifficulty("Easy");
+        setCourseId("");
+        setCategoryId("");
+        setDescription("");
+        quillInstanceRef.current.root.innerHTML = "";
+        setSampleTestcases([{ input: "", output: "" }]);
+        setHiddenTestcases([{ input: "", output: "" }]);
+        setErrors({});
+      }
       setTitle("");
-      setDifficulty("Easy");
-      setCourseId("");
-      setCategoryId("");
-      setDescription("");
-      quillInstanceRef.current.root.innerHTML = "";
-      setSampleTestcases([{ input: "", output: "" }]);
-      setHiddenTestcases([{ input: "", output: "" }]);
-      setErrors({});
+        setDifficulty("Easy");
+        setCourseId("");
+        setCategoryId("");
+        setDescription("");
+        quillInstanceRef.current.root.innerHTML = "";
+        setSampleTestcases([{ input: "", output: "" }]);
+        setHiddenTestcases([{ input: "", output: "" }]);
+        setErrors({});
     } catch (err) {
-      alert("Error creating question");
+      alert(`Error ${questionId ? 'updating' : 'creating'} question`);
       console.error(err);
     } finally {
       setLoading(false);
@@ -263,7 +311,7 @@ export default function QuestionUploadPage() {
         {/* SUBMIT */}
         <div className="footer">
           <button className="primary-btn" onClick={submit} disabled={loading}>
-            {loading ? "Publishing..." : "Publish Question"}
+            {loading ? (questionId ? "Updating..." : "Publishing...") : (questionId ? "Update Question" : "Publish Question")}
           </button>
         </div>
       </div>
@@ -272,8 +320,8 @@ export default function QuestionUploadPage() {
       {showPopup && (
         <div className="popup-overlay">
           <div className="popup-card">
-            <h3>✅ Question Created</h3>
-            <p>Your question has been published successfully.</p>
+            <h3>✅ Question {questionId ? 'Updated' : 'Created'}</h3>
+            <p>Your question has been {questionId ? 'updated' : 'published'} successfully.</p>
             <button className="primary-btn" onClick={() => setShowPopup(false)}>
               OK
             </button>

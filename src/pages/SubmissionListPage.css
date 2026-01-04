@@ -195,3 +195,20 @@
   font-size: 13px;
   max-height: 60vh;
 }
+
+.submission-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between; /* 🔥 pushes button to right */
+  gap: 16px;
+}
+
+/* Optional: prevent title block from shrinking */
+.submission-header > div:first-child {
+  flex-shrink: 0;
+}
+
+/* Button already defined */
+.mcq-report-btn {
+  margin-left: auto; /* extra safety */
+}

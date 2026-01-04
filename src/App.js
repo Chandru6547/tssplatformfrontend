@@ -17,6 +17,8 @@ import MCQListPage from "./pages/MCQListPage";
 import MCQCreatePage from "./pages/MCQCreatePage";
 import MCQStudentPage from "./pages/MCQStudentPage";
 import MCQTestPage from "./pages/MCQTestPage";
+import ComingSoon from "./pages/ComingSoon";
+import MCQReportPage from "./pages/MCQReportPage";
 import "./App.css";
 
 export default function App() {
@@ -94,6 +96,15 @@ export default function App() {
               />
 
               <Route
+                path="/admin/edit/:questionId"
+                element={
+                  <ProtectedRoute allowedRoles={["admin"]}>
+                    <QuestionUploadPage />
+                  </ProtectedRoute>
+                }
+              />
+
+              <Route
                 path="/mcqs/test/:mcqId"
                 element={
                   <ProtectedRoute>
@@ -133,6 +144,8 @@ export default function App() {
               <Route path="/years" element={<YearsListPage />} />
               <Route path="/submissions" element={<SubmissionListPage />} />
               <Route path="/batches" element={<BatchListPage />} />
+               <Route path="/comingsoon" element={<ComingSoon />} />
+               <Route path="/report/mcqs" element={<MCQReportPage />} />
               <Route path="*" element={<Navigate to="/" />} />
             </Routes>
           </main>
