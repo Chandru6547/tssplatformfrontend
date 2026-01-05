@@ -1,9 +1,10 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import CodeEditor from "../components/CodeEditor";
 import { getToken, logout, getUserId } from "../utils/auth";
 import "./SolveQuestionPage.css";
 import HumanLoader from "../components/loaders/HumanLoader";
+
 
 export default function SolveQuestionPage() {
   const { id } = useParams();
@@ -15,15 +16,12 @@ export default function SolveQuestionPage() {
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  /* 🔽 RESULT AUTO SCROLL REF */
-  const resultRef = useRef(null);
-
   /* ---------------- FETCH QUESTION ---------------- */
   useEffect(() => {
     async function fetchQuestion() {
       try {
         const res = await fetch(
-          `http://localhost:3000/questions/${id}`,
+          `https://tssplatform.onrender.com/questions/${id}`,
           {
             headers: {
               Authorization: `Bearer ${getToken()}`
@@ -46,23 +44,13 @@ export default function SolveQuestionPage() {
     fetchQuestion();
   }, [id, navigate]);
 
-  /* ---------------- AUTO SCROLL TO RESULT ---------------- */
-  useEffect(() => {
-    if (result && resultRef.current) {
-      resultRef.current.scrollIntoView({
-        behavior: "smooth",
-        block: "start"
-      });
-    }
-  }, [result]);
-
   /* ---------------- RUN SAMPLE ---------------- */
   const runSample = async () => {
     setLoading(true);
     setResult(null);
 
     try {
-      const res = await fetch("http://localhost:3000/run", {
+      const res = await fetch("https://tssplatform.onrender.com/run", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -95,7 +83,7 @@ export default function SolveQuestionPage() {
     setResult(null);
 
     try {
-      const res = await fetch("http://localhost:3000/run", {
+      const res = await fetch("https://tssplatform.onrender.com/run", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -123,14 +111,13 @@ export default function SolveQuestionPage() {
     }
   };
 
-  /* ---------------- LOADER ---------------- */
   if (!question) {
     return (
-      <HumanLoader
-        loadingText="Preparing your problem"
-        successText="Ready to practice!"
-        duration={2000}
-      />
+          <HumanLoader
+            loadingText="Preparing your problem"
+            successText="Ready to practice!"
+            duration={2000}
+          />
     );
   }
 
@@ -180,15 +167,17 @@ export default function SolveQuestionPage() {
           <div className="editor-shell">
 
             <div className="editor-top-bar">
-              <select
-                value={language}
-                onChange={(e) => setLanguage(e.target.value)}
-              >
-                <option value="python">Python</option>
-                <option value="c">C</option>
-                <option value="cpp">C++</option>
-                <option value="java">Java</option>
-              </select>
+              <div className="language-selector">
+                <select
+                  value={language}
+                  onChange={(e) => setLanguage(e.target.value)}
+                >
+                  <option value="python">Python</option>
+                  <option value="c">C</option>
+                  <option value="cpp">C++</option>
+                  <option value="java">Java</option>
+                </select>
+              </div>
             </div>
 
             <CodeEditor
@@ -214,73 +203,100 @@ export default function SolveQuestionPage() {
         </div>
       </div>
 
-      {/* RESULT PANEL */}
-      {result && (
-        <div className="result-panel" ref={resultRef}>
+      {/* RESULT */}
+    {result && (
+      <div className="result-panel">
 
-          {/* SUMMARY */}
-          <div className="result-summary">
-            <div className="summary-left">
-              <span
-                className={`summary-verdict ${
-                  result.verdict === "AC" ? "ok" : "fail"
-                }`}
-              >
-                {result.verdict === "AC" ? "✔ Accepted" : "✖ Wrong Answer"}
-              </span>
-              <span className="summary-count">
-                {result.passed} / {result.total} testcases passed
-              </span>
-            </div>
+        {/* SUMMARY CARD */}
+        <div className="result-summary">
 
-            {result.submissionId && (
-              <span className="summary-tag">Submission saved</span>
-            )}
+          <div className="summary-left">
+            <span
+              className={`summary-verdict ${
+                result.verdict === "AC" ? "ok" : "fail"
+              }`}
+            >
+              {result.verdict === "AC" ? "✔ Accepted" : "✖ Wrong Answer"}
+            </span>
+
+            <span className="summary-count">
+              {result.passed} / {result.total} testcases passed
+            </span>
           </div>
 
-          {/* RUN MODE DETAILS */}
-          {result.submissionId === null && result.results && (
-            <div className="testcase-list">
-              {result.results.map((tc, i) => {
-                const isError =
-                  tc.status !== "PASS" &&
-                  (tc.actual?.includes("error") ||
-                    tc.actual?.includes("Error") ||
-                    tc.actual?.includes("Exception"));
+          {/* SUBMIT ONLY */}
+          {result.submissionId && (
+            <span className="summary-tag">
+              Submission saved
+            </span>
+          )}
+        </div>
 
-                return (
-                  <div key={i}>
-                    {!isError ? (
-                      <div
-                        className={`testcase-card ${
-                          tc.status === "PASS" ? "tc-pass" : "tc-fail"
-                        }`}
-                      >
-                        <div className="tc-header">
-                          <span>Testcase #{i + 1}</span>
-                          <span>{tc.status}</span>
-                        </div>
+        {/* RUN MODE → FULL DETAILS */}
+        {result.submissionId === null && result.results && (
+          <div className="testcase-list">
+            {result.results.map((tc, i) => {
+              const isError =
+                tc.status !== "PASS" &&
+                (tc.actual?.includes("error") ||
+                  tc.actual?.includes("Error") ||
+                  tc.actual?.includes("Exception") ||
+                  tc.actual?.includes("In function"));
 
-                        <pre><strong>Input</strong> {tc.input}</pre>
-                        <pre><strong>Expected</strong> {tc.expected}</pre>
-                        <pre><strong>Your Output</strong> {tc.actual}</pre>
+              return (
+                <div key={i}>
+
+                  {/* NORMAL TESTCASE CARD */}
+                  {!isError && (
+                    <div
+                      className={`testcase-card ${
+                        tc.status === "PASS" ? "tc-pass" : "tc-fail"
+                      }`}
+                    >
+                      <div className="tc-header">
+                        <span>Testcase #{i + 1}</span>
+                        <span className="tc-status">{tc.status}</span>
                       </div>
-                    ) : (
-                      <div className="error-card">
-                        <div className="error-header">
-                          🚨 Error in Testcase #{i + 1}
-                        </div>
+
+                      <div className="tc-row">
+                        <label>Input</label>
+                        <pre>{tc.input}</pre>
+                      </div>
+
+                      <div className="tc-row">
+                        <label>Expected</label>
+                        <pre>{tc.expected}</pre>
+                      </div>
+
+                      <div className="tc-row">
+                        <label>Your Output</label>
                         <pre>{tc.actual}</pre>
                       </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          )}
+                    </div>
+                  )}
 
-        </div>
-      )}
+                  {/* 🚨 ERROR CARD (CE / RE) */}
+                  {isError && (
+                    <div className="error-card">
+                      <div className="error-header">
+                        🚨 Error in Testcase #{i + 1}
+                        <span className="error-tag">{tc.status}</span>
+                      </div>
+
+                      <pre className="error-output">
+                        {tc.actual}
+                      </pre>
+                    </div>
+                  )}
+
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+      </div>
+    )}
     </div>
   );
 }
