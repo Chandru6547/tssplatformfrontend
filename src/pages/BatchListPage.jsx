@@ -26,7 +26,7 @@ export default function BatchListPage() {
     const fetchBatches = async () => {
       try {
         const res = await fetch(
-          `https://tssplatform.onrender.com/batch/get-by-year-and-campus?campus=${encodeURIComponent(
+          `http://localhost:3000/batch/get-by-year-and-campus?campus=${encodeURIComponent(
             campus
           )}&year=${year}`
         );

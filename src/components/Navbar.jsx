@@ -123,6 +123,13 @@ export default function Navbar() {
               <FaChartLine />
               <span>Student Creation</span>
             </Link>
+            <Link
+              to="/manage-curriculam"
+              className={`nav-item ${isActive("/manage-curriculam")}`}
+            >
+              <FaChartLine />
+              <span>Manage Curriculam</span>
+            </Link>
           </>
         )}
       </nav>

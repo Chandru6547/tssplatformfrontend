@@ -30,7 +30,7 @@ export default function SubmissionListPage() {
     const fetchSubmissions = async () => {
       try {
         const res = await fetch(
-          "https://tssplatform.onrender.com/getSubmissionsByBatch",
+          "http://localhost:3000/getSubmissionsByBatch",
           {
             method: "POST",
             headers: { "Content-Type": "application/json" },

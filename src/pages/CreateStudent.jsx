@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import * as XLSX from "xlsx";
 import "./CreateStudent.css";
 
-const API_BASE = "https://tssplatform.onrender.com";
+const API_BASE = "http://localhost:3000";
 
 export default function CreateStudent() {
   const [campuses, setCampuses] = useState([]);

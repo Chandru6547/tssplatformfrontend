@@ -18,7 +18,7 @@ export default function CampusListPage() {
 
       try {
         const res = await fetch(
-          "https://tssplatform.onrender.com/campus/get"
+          "http://localhost:3000/campus/get"
         );
 
         if (!res.ok) throw new Error("Failed to fetch campuses");

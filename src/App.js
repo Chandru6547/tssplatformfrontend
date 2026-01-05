@@ -20,6 +20,7 @@ import MCQTestPage from "./pages/MCQTestPage";
 import ComingSoon from "./pages/ComingSoon";
 import MCQReportPage from "./pages/MCQReportPage";
 import CreateStudent from "./pages/CreateStudent";
+import AssignCourseOrMcq from "./pages/AssignCourseOrMcq";
 import "./App.css";
 
 export default function App() {
@@ -148,6 +149,7 @@ export default function App() {
                <Route path="/comingsoon" element={<ComingSoon />} />
                <Route path="/report/mcqs" element={<MCQReportPage />} />
                 <Route path="/create-student" element={<CreateStudent />} />
+                <Route path="/manage-curriculam" element={<AssignCourseOrMcq />} />
               <Route path="*" element={<Navigate to="/" />} />
             </Routes>
           </main>

@@ -12,7 +12,7 @@ export default function CreateAdminPage() {
     setLoading(true);
 
     try {
-      const res = await fetch("https://tssplatform.onrender.com/api/admin/create", {
+      const res = await fetch("http://localhost:3000/api/admin/create", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

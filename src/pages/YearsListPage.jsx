@@ -20,7 +20,7 @@ export default function YearsListPage() {
     }
 
     fetch(
-      `https://tssplatform.onrender.com/year/get-by-campus?campus=${encodeURIComponent(
+      `http://localhost:3000/year/get-by-campus?campus=${encodeURIComponent(
         campus
       )}`
     )
