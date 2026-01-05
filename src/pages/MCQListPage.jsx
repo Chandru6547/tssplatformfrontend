@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import {
-  getAllMCQs,
+  getAllMCQForAdmin,
   getMCQsByCategory,
   getMCQsByTopic,
   deleteMCQ
@@ -16,7 +16,9 @@ export default function MCQListPage() {
 
   const loadMCQs = async () => {
     setLoading(true);
-    const data = await getAllMCQs();
+    const data = await getAllMCQForAdmin();
+    console.log(data);
+    
     setMcqs(data);
     setLoading(false);
   };
