@@ -14,7 +14,7 @@ export default function CompilerPage() {
     setResult(null);
 
     try {
-      const res = await fetch("http://localhost:3000/run", {
+      const res = await fetch("https://tssplatform.onrender.com/run", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ language, code, testcases })

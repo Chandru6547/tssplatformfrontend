@@ -1,4 +1,4 @@
-const BASE_URL = "http://localhost:3000/api/mcqs";
+const BASE_URL = "https://tssplatform.onrender.com/api/mcqs";
 // change to Render URL later
 
 export const createMCQ = async (data) => {
@@ -19,7 +19,7 @@ export const getAllMCQs = async () => {
 
 export const getAllMCQForAdmin = async () => {
   try {
-    const res = await fetch("http://localhost:3000/getAllMCQForAdmin");
+    const res = await fetch("https://tssplatform.onrender.com/getAllMCQForAdmin");
 
     if (!res.ok) {
       throw new Error("Failed to fetch MCQs");

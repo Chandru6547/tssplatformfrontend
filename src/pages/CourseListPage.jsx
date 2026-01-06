@@ -21,7 +21,7 @@ export default function CourseListPage() {
 
     try {
       const res = await fetch(
-        "http://localhost:3000/courses/student",
+        "https://tssplatform.onrender.com/courses/student",
         {
           method: "POST",
           headers: {
@@ -60,7 +60,7 @@ export default function CourseListPage() {
     setLoading(true);
     try {
       const res = await fetch(
-        "http://localhost:3000/courses",
+        "https://tssplatform.onrender.com/courses",
         {
           method: "POST",
           headers: {

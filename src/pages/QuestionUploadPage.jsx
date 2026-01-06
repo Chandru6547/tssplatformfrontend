@@ -64,7 +64,7 @@ export default function QuestionUploadPage() {
   useEffect(() => {
     if (!questionId) return;
 
-    fetch(`http://localhost:3000/questionsforadmin/${questionId}`, {
+    fetch(`https://tssplatform.onrender.com/questionsforadmin/${questionId}`, {
       headers: {
         Authorization: `Bearer ${getToken()}`
       }
@@ -93,7 +93,7 @@ export default function QuestionUploadPage() {
 
   /* ---------------- FETCH COURSES ---------------- */
   useEffect(() => {
-    fetch("http://localhost:3000/courses", {
+    fetch("https://tssplatform.onrender.com/courses", {
       headers: {
         Authorization: `Bearer ${getToken()}`
       }
@@ -111,7 +111,7 @@ export default function QuestionUploadPage() {
       return;
     }
 
-    fetch(`http://localhost:3000/categories?courseId=${courseId}`, {
+    fetch(`https://tssplatform.onrender.com/categories?courseId=${courseId}`, {
       headers: {
         Authorization: `Bearer ${getToken()}`
       }
@@ -157,7 +157,7 @@ export default function QuestionUploadPage() {
 
     try {
       const isEditing = !!questionId;
-      const url = isEditing ? `http://localhost:3000/questions/${questionId}` : "http://localhost:3000/questions";
+      const url = isEditing ? `https://tssplatform.onrender.com/questions/${questionId}` : "https://tssplatform.onrender.com/questions";
       const method = isEditing ? "PUT" : "POST";
 
       const res = await fetch(url, {

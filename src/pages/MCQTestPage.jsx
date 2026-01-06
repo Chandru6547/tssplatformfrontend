@@ -19,7 +19,7 @@ export default function MCQTestPage() {
   useEffect(() => {
     const fetchMCQ = async () => {
       const res = await fetch(
-        `http://localhost:3000/api/mcqs/${mcqId}`,
+        `https://tssplatform.onrender.com/api/mcqs/${mcqId}`,
         { headers: { Authorization: `Bearer ${getToken()}` } }
       );
 
@@ -62,7 +62,7 @@ export default function MCQTestPage() {
     }));
 
     const res = await fetch(
-      "http://localhost:3000/api/mcq-submissions/submit",
+      "https://tssplatform.onrender.com/api/mcq-submissions/submit",
       {
         method: "POST",
         headers: {
