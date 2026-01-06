@@ -122,3 +122,51 @@ button.secondary {
   background: #fecaca;
 }
 
+/* ===============================
+   EXCEL UPLOAD SECTION (FIXED)
+================================ */
+
+.excel-upload {
+  margin: 24px 0;
+}
+
+.excel-upload > label:first-child {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: #1e293b;
+}
+
+/* Upload box */
+.upload-box {
+  display: inline-block;
+  padding: 14px 20px;
+  border: 2px dashed #cbd5e1;
+  border-radius: 12px;
+  background: #f8fafc;
+  color: #1e293b;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.upload-box:hover {
+  border-color: #6366f1;
+  background: #eef2ff;
+  transform: translateY(-1px);
+}
+
+/* Hide native input */
+.upload-box input[type="file"] {
+  display: none;
+}
+
+.excel-upload small {
+  display: block;
+  margin-top: 8px;
+  font-size: 12px;
+  color: #64748b;
+}
+
+
