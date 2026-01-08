@@ -1,4 +1,4 @@
-const BASE_URL = `${process.env.REACT_APP_API_BASE_URL}api/mcqs`;
+const BASE_URL = `${process.env.REACT_APP_API_BASE_URL}/api/mcqs`;
 // change to Render URL later
 
 export const createMCQ = async (data) => {
@@ -19,7 +19,7 @@ export const getAllMCQs = async () => {
 
 export const getAllMCQForAdmin = async () => {
   try {
-    const res = await fetch(`${process.env.REACT_APP_API_BASE_URL}getAllMCQForAdmin`);
+    const res = await fetch(`${process.env.REACT_APP_API_BASE_URL}/getAllMCQForAdmin`);
 
     if (!res.ok) {
       throw new Error("Failed to fetch MCQs");

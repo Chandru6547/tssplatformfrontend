@@ -64,7 +64,7 @@ export default function MCQTestPage() {
   useEffect(() => {
     const fetchMCQ = async () => {
       const res = await fetch(
-        `${process.env.REACT_APP_API_BASE_URL}api/mcqs/${mcqId}`,
+        `${process.env.REACT_APP_API_BASE_URL}/api/mcqs/${mcqId}`,
         { headers: { Authorization: `Bearer ${getToken()}` } }
       );
 
@@ -151,7 +151,7 @@ export default function MCQTestPage() {
       }));
 
       const res = await fetch(
-        `${process.env.REACT_APP_API_BASE_URL}api/mcq-submissions/submit`,
+        `${process.env.REACT_APP_API_BASE_URL}/api/mcq-submissions/submit`,
         {
           method: "POST",
           headers: {

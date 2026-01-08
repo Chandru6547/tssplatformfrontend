@@ -18,7 +18,7 @@ export default function CampusListPage() {
 
       try {
         const res = await fetch(
-          `${process.env.REACT_APP_API_BASE_URL}campus/get`
+          `${process.env.REACT_APP_API_BASE_URL}/campus/get`
         );
 
         if (!res.ok) throw new Error("Failed to fetch campuses");

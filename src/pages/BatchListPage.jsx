@@ -26,7 +26,7 @@ export default function BatchListPage() {
     const fetchBatches = async () => {
       try {
         const res = await fetch(
-          `${process.env.REACT_APP_API_BASE_URL}batch/get-by-year-and-campus?campus=${encodeURIComponent(
+          `${process.env.REACT_APP_API_BASE_URL}/batch/get-by-year-and-campus?campus=${encodeURIComponent(
             campus
           )}&year=${year}`
         );
