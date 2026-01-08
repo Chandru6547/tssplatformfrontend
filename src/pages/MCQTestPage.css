@@ -186,3 +186,142 @@
 }
 
 
+/* START SCREEN */
+.start-screen {
+  height: 100vh;
+  background: #0f172a;
+  color: white;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.start-btn {
+  margin-top: 20px;
+  padding: 14px 30px;
+  font-size: 18px;
+  border: none;
+  border-radius: 8px;
+  background: #22c55e;
+  cursor: pointer;
+}
+
+/* EXAM */
+.exam-wrapper {
+  min-height: 100vh;
+  background: #f8fafc;
+}
+
+.blur {
+  filter: blur(6px);
+}
+
+.progress-bar {
+  height: 6px;
+  background: #e5e7eb;
+}
+
+.progress-bar div {
+  height: 100%;
+  background: #3b82f6;
+  transition: width 0.3s;
+}
+
+.exam-container {
+  display: flex;
+  padding: 30px;
+  gap: 30px;
+}
+
+.question-panel {
+  flex: 1;
+  background: white;
+  padding: 30px;
+  border-radius: 12px;
+}
+
+.options-panel {
+  flex: 1;
+}
+
+.option-tile {
+  background: white;
+  padding: 18px;
+  border-radius: 10px;
+  margin-bottom: 15px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  border: 2px solid transparent;
+}
+
+.option-tile:hover {
+  border-color: #3b82f6;
+}
+
+.option-tile.selected {
+  border-color: #22c55e;
+  background: #ecfdf5;
+}
+
+.opt-circle {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #3b82f6;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.nav-buttons {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 30px;
+}
+
+.nav-buttons button {
+  padding: 12px 24px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.submit {
+  background: #22c55e;
+  color: white;
+}
+
+/* RESULT MODAL */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.result-modal {
+  background: white;
+  padding: 30px;
+  border-radius: 14px;
+  text-align: center;
+}
+
+.camera-preview {
+  position: fixed;
+  bottom: 12px;
+  right: 12px;
+  width: 160px;
+  height: 120px;
+  border-radius: 10px;
+  border: 2px solid #22c55e;
+  object-fit: cover;
+  opacity: 0.15;
+  pointer-events: none;
+}
+

@@ -1,4 +1,4 @@
-const API_BASE = "https://tssplatform.onrender.com";
+const API_BASE = process.env.REACT_APP_API_BASE_URL;
 
 export async function fetchCampuses() {
   const res = await fetch(`${API_BASE}/campus/get`);

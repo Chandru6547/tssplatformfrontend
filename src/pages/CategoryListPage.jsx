@@ -24,7 +24,7 @@ export default function CategoryListPage() {
 
     try {
       const res = await fetch(
-        `https://tssplatform.onrender.com/categories?courseId=${courseId}`,
+        `http://localhost:3000/categories?courseId=${courseId}`,
         {
           headers: {
             Authorization: `Bearer ${getToken()}`
@@ -60,7 +60,7 @@ export default function CategoryListPage() {
     setLoading(true);
     try {
       const res = await fetch(
-        "https://tssplatform.onrender.com/categories",
+        "http://localhost:3000/categories",
         {
           method: "POST",
           headers: {

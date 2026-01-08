@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { getToken, logout, getUserId } from "../utils/auth";
 import "./MCQTestPage.css";
@@ -10,16 +10,61 @@ export default function MCQTestPage() {
   const [mcq, setMcq] = useState(null);
   const [index, setIndex] = useState(0);
   const [answers, setAnswers] = useState({});
+  const [started, setStarted] = useState(false);
   const [showResult, setShowResult] = useState(false);
   const [score, setScore] = useState(0);
+  const [submitting, setSubmitting] = useState(false);
+
+  const videoRef = useRef(null);
+  const streamRef = useRef(null);
 
   const STORAGE_KEY = `mcq_${mcqId}_answers`;
+
+  /* ---------- FULLSCREEN (SAFE) ---------- */
+  const enterFullscreen = async () => {
+    const el = document.documentElement;
+    if (el.requestFullscreen) await el.requestFullscreen();
+  };
+
+  const exitFullscreenSafely = () => {
+    if (document.fullscreenElement) {
+      document.exitFullscreen().catch(() => {});
+    }
+  };
+
+  /* ---------- CAMERA + MIC ---------- */
+  const startCameraMic = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: true,
+        audio: true
+      });
+
+      streamRef.current = stream;
+      videoRef.current.srcObject = stream;
+      videoRef.current.play();
+
+      // Detect camera / mic stop
+      stream.getTracks().forEach(track => {
+        track.onended = () => {
+          submitTest(true);
+        };
+      });
+    } catch (err) {
+      alert("Camera & Microphone permission is required");
+      throw err;
+    }
+  };
+
+  const stopCameraMic = () => {
+    streamRef.current?.getTracks().forEach(t => t.stop());
+  };
 
   /* ---------- FETCH MCQ ---------- */
   useEffect(() => {
     const fetchMCQ = async () => {
       const res = await fetch(
-        `https://tssplatform.onrender.com/api/mcqs/${mcqId}`,
+        `${process.env.REACT_APP_API_BASE_URL}api/mcqs/${mcqId}`,
         { headers: { Authorization: `Bearer ${getToken()}` } }
       );
 
@@ -39,75 +84,122 @@ export default function MCQTestPage() {
     fetchMCQ();
   }, [mcqId]);
 
+  /* ---------- FULLSCREEN EXIT ---------- */
+  useEffect(() => {
+    const handleExit = () => {
+      if (!document.fullscreenElement && started && !showResult) {
+        submitTest(true);
+      }
+    };
+
+    document.addEventListener("fullscreenchange", handleExit);
+    return () =>
+      document.removeEventListener("fullscreenchange", handleExit);
+  }, [started, showResult]);
+
+  /* ---------- START TEST ---------- */
+  const startTest = async () => {
+    try {
+      await enterFullscreen();
+      await startCameraMic();
+      setStarted(true);
+    } catch {
+      exitFullscreenSafely();
+    }
+  };
+
   if (!mcq) return null;
+
+  /* ---------- START SCREEN ---------- */
+  if (!started) {
+    return (
+      <div className="start-screen">
+        <h1>{mcq.title || "MCQ Test"}</h1>
+        <ul className="rules">
+          <li>Fullscreen is mandatory</li>
+          <li>Camera & microphone must stay ON</li>
+          <li>Violation will auto-submit the test</li>
+        </ul>
+        <button className="start-btn" onClick={startTest}>
+          Start Test
+        </button>
+      </div>
+    );
+  }
 
   const question = mcq.questions[index];
   const selected = answers[question._id];
   const progress = ((index + 1) / mcq.questions.length) * 100;
 
   /* ---------- SELECT OPTION ---------- */
-  const selectOption = (opt) => {
+  const selectOption = opt => {
     if (selected) return;
-
     const updated = { ...answers, [question._id]: opt };
     setAnswers(updated);
     localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
   };
 
-  /* ---------- SUBMIT ---------- */
-  const submitTest = async () => {
-    const payload = mcq.questions.map(q => ({
-      questionId: q._id,
-      selectedOption: answers[q._id]
-    }));
+  /* ---------- SUBMIT TEST ---------- */
+  const submitTest = async (forced = false) => {
+    if (submitting) return;
+    setSubmitting(true);
 
-    const res = await fetch(
-      "https://tssplatform.onrender.com/api/mcq-submissions/submit",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${getToken()}`
-        },
-        body: JSON.stringify({
-          mcqId,
-          studentId: getUserId(),
-          answers: payload
-        })
-      }
-    );
+    try {
+      const payload = mcq.questions.map(q => ({
+        questionId: q._id,
+        selectedOption: answers[q._id] || null
+      }));
 
-    const data = await res.json();
-    setScore(data.submission.score);
-    setShowResult(true);
-    localStorage.removeItem(STORAGE_KEY);
+      const res = await fetch(
+        `${process.env.REACT_APP_API_BASE_URL}api/mcq-submissions/submit`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${getToken()}`
+          },
+          body: JSON.stringify({
+            mcqId,
+            studentId: getUserId(),
+            answers: payload,
+            forcedSubmit: forced
+          })
+        }
+      );
+
+      const data = await res.json();
+      setScore(data?.submission?.score ?? data?.score ?? 0);
+      setShowResult(true);
+      localStorage.removeItem(STORAGE_KEY);
+    } catch {
+      setScore(0);
+      setShowResult(true);
+    } finally {
+      stopCameraMic();
+      exitFullscreenSafely();
+    }
   };
 
   return (
     <>
+      {/* Hidden camera preview */}
+      <video ref={videoRef} className="camera-preview" muted />
+
       <div className={`exam-wrapper ${showResult ? "blur" : ""}`}>
-        {/* PROGRESS BAR */}
         <div className="progress-bar">
           <div style={{ width: `${progress}%` }} />
         </div>
 
         <div className="exam-container">
-          {/* QUESTION */}
-          <div className="question-panel animate-slide">
-            <span className="question-count">
-              Question {index + 1} / {mcq.questions.length}
-            </span>
+          <div className="question-panel">
             <h2>{question.question}</h2>
           </div>
 
-          {/* OPTIONS */}
           <div className="options-panel">
             {["A", "B", "C", "D"].map(opt => (
               <div
                 key={opt}
-                className={`option-tile ${
-                  selected === opt ? "selected" : ""
-                }`}
+                className={`option-tile ${selected === opt ? "selected" : ""}`}
                 onClick={() => selectOption(opt)}
               >
                 <span className="opt-circle">{opt}</span>
@@ -116,25 +208,15 @@ export default function MCQTestPage() {
             ))}
 
             <div className="nav-buttons">
-              <button
-                disabled={index === 0}
-                onClick={() => setIndex(i => i - 1)}
-              >
-                ← Previous
-              </button>
-
               {index < mcq.questions.length - 1 ? (
-                <button
-                  disabled={!selected}
-                  onClick={() => setIndex(i => i + 1)}
-                >
+                <button disabled={!selected} onClick={() => setIndex(i => i + 1)}>
                   Next →
                 </button>
               ) : (
                 <button
                   className="submit"
-                  disabled={!selected}
-                  onClick={submitTest}
+                  disabled={!selected || submitting}
+                  onClick={() => submitTest(false)}
                 >
                   Submit Test
                 </button>
@@ -144,11 +226,10 @@ export default function MCQTestPage() {
         </div>
       </div>
 
-      {/* RESULT MODAL */}
       {showResult && (
         <div className="modal-overlay">
           <div className="result-modal">
-            <h2>🎉 Test Completed</h2>
+            <h2>Test Completed</h2>
             <p>
               Score: <strong>{score}</strong> / {mcq.questions.length}
             </p>

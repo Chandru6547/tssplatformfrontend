@@ -4,7 +4,6 @@ import Quill from "quill";
 import "quill/dist/quill.snow.css";
 import "./QuestionUploadPage.css";
 import { getToken, logout } from "../utils/auth";
-import { log } from "three/src/nodes/TSL.js";
 
 export default function QuestionUploadPage() {
   const quillContainerRef = useRef(null);
@@ -64,7 +63,7 @@ export default function QuestionUploadPage() {
   useEffect(() => {
     if (!questionId) return;
 
-    fetch(`https://tssplatform.onrender.com/questionsforadmin/${questionId}`, {
+    fetch(`${process.env.REACT_APP_API_BASE_URL}questionsforadmin/${questionId}`, {
       headers: {
         Authorization: `Bearer ${getToken()}`
       }
@@ -93,7 +92,7 @@ export default function QuestionUploadPage() {
 
   /* ---------------- FETCH COURSES ---------------- */
   useEffect(() => {
-    fetch("https://tssplatform.onrender.com/courses", {
+    fetch(`${process.env.REACT_APP_API_BASE_URL}courses`, {
       headers: {
         Authorization: `Bearer ${getToken()}`
       }
@@ -111,7 +110,7 @@ export default function QuestionUploadPage() {
       return;
     }
 
-    fetch(`https://tssplatform.onrender.com/categories?courseId=${courseId}`, {
+    fetch(`${process.env.REACT_APP_API_BASE_URL}categories?courseId=${courseId}`, {
       headers: {
         Authorization: `Bearer ${getToken()}`
       }
@@ -157,7 +156,7 @@ export default function QuestionUploadPage() {
 
     try {
       const isEditing = !!questionId;
-      const url = isEditing ? `https://tssplatform.onrender.com/questions/${questionId}` : "https://tssplatform.onrender.com/questions";
+      const url = isEditing ? `${process.env.REACT_APP_API_BASE_URL}questions/${questionId}` : `${process.env.REACT_APP_API_BASE_URL}questions`;
       const method = isEditing ? "PUT" : "POST";
 
       const res = await fetch(url, {

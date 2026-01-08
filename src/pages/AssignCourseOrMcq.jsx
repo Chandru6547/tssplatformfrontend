@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import "./CreateStudent.css";
 
-const API_BASE = "https://tssplatform.onrender.com";
+const API_BASE = process.env.REACT_APP_API_BASE_URL;
 
 export default function AssignCourseOrMcq() {
   /* ---------- MASTER DATA ---------- */

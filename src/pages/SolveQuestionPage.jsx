@@ -21,7 +21,7 @@ export default function SolveQuestionPage() {
     async function fetchQuestion() {
       try {
         const res = await fetch(
-          `https://tssplatform.onrender.com/questions/${id}`,
+          `${process.env.REACT_APP_API_BASE_URL}questions/${id}`,
           {
             headers: {
               Authorization: `Bearer ${getToken()}`
@@ -50,7 +50,7 @@ export default function SolveQuestionPage() {
     setResult(null);
 
     try {
-      const res = await fetch("https://tssplatform.onrender.com/run", {
+      const res = await fetch(`${process.env.REACT_APP_API_BASE_URL}run`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -83,7 +83,7 @@ export default function SolveQuestionPage() {
     setResult(null);
 
     try {
-      const res = await fetch("https://tssplatform.onrender.com/run", {
+      const res = await fetch(`${process.env.REACT_APP_API_BASE_URL}run`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

@@ -26,7 +26,7 @@ export default function MCQReportPage() {
     const fetchAllMCQs = async () => {
       try {
         const res = await fetch(
-          "https://tssplatform.onrender.com/api/mcqs/getallmcq",
+          `${process.env.REACT_APP_API_BASE_URL}api/mcqs/getallmcq`,
           {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -69,7 +69,7 @@ export default function MCQReportPage() {
       setReport([]);
 
       const res = await fetch(
-        "https://tssplatform.onrender.com/api/mcq-submissions/getreporbytbatch",
+        `${process.env.REACT_APP_API_BASE_URL}api/mcq-submissions/getreporbytbatch`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },

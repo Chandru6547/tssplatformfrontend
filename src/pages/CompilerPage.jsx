@@ -14,7 +14,7 @@ export default function CompilerPage() {
     setResult(null);
 
     try {
-      const res = await fetch("https://tssplatform.onrender.com/run", {
+      const res = await fetch(`${process.env.REACT_APP_API_BASE_URL}run`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ language, code, testcases })
