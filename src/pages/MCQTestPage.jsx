@@ -17,13 +17,15 @@ export default function MCQTestPage() {
 
   const videoRef = useRef(null);
   const streamRef = useRef(null);
+  const cameraStartedRef = useRef(false);
 
   const STORAGE_KEY = `mcq_${mcqId}_answers`;
 
-  /* ---------- FULLSCREEN (SAFE) ---------- */
+  /* ---------- FULLSCREEN ---------- */
   const enterFullscreen = async () => {
-    const el = document.documentElement;
-    if (el.requestFullscreen) await el.requestFullscreen();
+    if (!document.fullscreenElement) {
+      await document.documentElement.requestFullscreen();
+    }
   };
 
   const exitFullscreenSafely = () => {
@@ -32,8 +34,10 @@ export default function MCQTestPage() {
     }
   };
 
-  /* ---------- CAMERA + MIC ---------- */
+  /* ---------- CAMERA + MIC (ONE TIME ONLY) ---------- */
   const startCameraMic = async () => {
+    if (cameraStartedRef.current) return; // 🔒 PREVENT REPEAT
+
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
         video: true,
@@ -41,23 +45,30 @@ export default function MCQTestPage() {
       });
 
       streamRef.current = stream;
-      videoRef.current.srcObject = stream;
-      videoRef.current.play();
+      cameraStartedRef.current = true;
 
-      // Detect camera / mic stop
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+        videoRef.current.muted = true;
+        await videoRef.current.play();
+      }
+
+      // Detect forced stop
       stream.getTracks().forEach(track => {
         track.onended = () => {
-          submitTest(true);
+          if (!showResult) submitTest(true);
         };
       });
     } catch (err) {
-      alert("Camera & Microphone permission is required");
+      alert("Camera & microphone permission is mandatory");
       throw err;
     }
   };
 
   const stopCameraMic = () => {
     streamRef.current?.getTracks().forEach(t => t.stop());
+    streamRef.current = null;
+    cameraStartedRef.current = false;
   };
 
   /* ---------- FETCH MCQ ---------- */
@@ -82,9 +93,9 @@ export default function MCQTestPage() {
     };
 
     fetchMCQ();
-  }, [mcqId]);
+  }, [mcqId, navigate]);
 
-  /* ---------- FULLSCREEN EXIT ---------- */
+  /* ---------- FULLSCREEN EXIT DETECTION ---------- */
   useEffect(() => {
     const handleExit = () => {
       if (!document.fullscreenElement && started && !showResult) {
@@ -118,7 +129,7 @@ export default function MCQTestPage() {
         <ul className="rules">
           <li>Fullscreen is mandatory</li>
           <li>Camera & microphone must stay ON</li>
-          <li>Violation will auto-submit the test</li>
+          <li>Violation auto-submits the test</li>
         </ul>
         <button className="start-btn" onClick={startTest}>
           Start Test
@@ -182,7 +193,7 @@ export default function MCQTestPage() {
 
   return (
     <>
-      {/* Hidden camera preview */}
+      {/* Hidden camera */}
       <video ref={videoRef} className="camera-preview" muted />
 
       <div className={`exam-wrapper ${showResult ? "blur" : ""}`}>
