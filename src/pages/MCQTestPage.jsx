@@ -19,6 +19,10 @@ export default function MCQTestPage() {
   const streamRef = useRef(null);
   const cameraStartedRef = useRef(false);
 
+  /* TAB SWITCH */
+  const tabSwitchCountRef = useRef(0);
+  const [showTabWarning, setShowTabWarning] = useState(false);
+
   const STORAGE_KEY = `mcq_${mcqId}_answers`;
 
   /* ---------- FULLSCREEN ---------- */
@@ -34,35 +38,33 @@ export default function MCQTestPage() {
     }
   };
 
-  /* ---------- CAMERA + MIC (ONE TIME ONLY) ---------- */
+  /* ---------- CAMERA + MIC ---------- */
   const startCameraMic = async () => {
-    if (cameraStartedRef.current) return; // 🔒 PREVENT REPEAT
+    if (cameraStartedRef.current) return;
 
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: true,
-        audio: true
-      });
+    const stream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: "user" },
+      audio: true
+    });
 
-      streamRef.current = stream;
-      cameraStartedRef.current = true;
+    streamRef.current = stream;
+    cameraStartedRef.current = true;
 
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-        videoRef.current.muted = true;
-        await videoRef.current.play();
-      }
+    const video = videoRef.current;
+    if (video) {
+      video.srcObject = stream;
+      video.muted = true;
+      video.playsInline = true;
 
-      // Detect forced stop
-      stream.getTracks().forEach(track => {
-        track.onended = () => {
-          if (!showResult) submitTest(true);
-        };
-      });
-    } catch (err) {
-      alert("Camera & microphone permission is mandatory");
-      throw err;
+      await new Promise(resolve => (video.onloadedmetadata = resolve));
+      await video.play();
     }
+
+    stream.getTracks().forEach(track => {
+      track.onended = () => {
+        if (!showResult) submitTest(true);
+      };
+    });
   };
 
   const stopCameraMic = () => {
@@ -95,7 +97,7 @@ export default function MCQTestPage() {
     fetchMCQ();
   }, [mcqId, navigate]);
 
-  /* ---------- FULLSCREEN EXIT DETECTION ---------- */
+  /* ---------- FULLSCREEN EXIT ---------- */
   useEffect(() => {
     const handleExit = () => {
       if (!document.fullscreenElement && started && !showResult) {
@@ -108,15 +110,42 @@ export default function MCQTestPage() {
       document.removeEventListener("fullscreenchange", handleExit);
   }, [started, showResult]);
 
+  /* ---------- TAB SWITCH DETECTION ---------- */
+  useEffect(() => {
+    if (!started || showResult) return;
+
+    const handleViolation = () => {
+      tabSwitchCountRef.current += 1;
+
+      if (tabSwitchCountRef.current === 2) {
+        setShowTabWarning(true); // popup only second time
+      }
+
+      if (tabSwitchCountRef.current >= 3) {
+        submitTest(true); // auto submit third time
+      }
+    };
+
+    const onVisibilityChange = () => {
+      if (document.hidden) handleViolation();
+    };
+
+    const onBlur = () => handleViolation();
+
+    document.addEventListener("visibilitychange", onVisibilityChange);
+    window.addEventListener("blur", onBlur);
+
+    return () => {
+      document.removeEventListener("visibilitychange", onVisibilityChange);
+      window.removeEventListener("blur", onBlur);
+    };
+  }, [started, showResult]);
+
   /* ---------- START TEST ---------- */
   const startTest = async () => {
-    try {
-      await enterFullscreen();
-      await startCameraMic();
-      setStarted(true);
-    } catch {
-      exitFullscreenSafely();
-    }
+    await startCameraMic();
+    await enterFullscreen();
+    setStarted(true);
   };
 
   if (!mcq) return null;
@@ -127,9 +156,9 @@ export default function MCQTestPage() {
       <div className="start-screen">
         <h1>{mcq.title || "MCQ Test"}</h1>
         <ul className="rules">
-          <li>Fullscreen is mandatory</li>
-          <li>Camera & microphone must stay ON</li>
-          <li>Violation auto-submits the test</li>
+          <li>Fullscreen mandatory</li>
+          <li>Camera & microphone ON</li>
+          <li>Tab switch monitored</li>
         </ul>
         <button className="start-btn" onClick={startTest}>
           Start Test
@@ -182,9 +211,6 @@ export default function MCQTestPage() {
       setScore(data?.submission?.score ?? data?.score ?? 0);
       setShowResult(true);
       localStorage.removeItem(STORAGE_KEY);
-    } catch {
-      setScore(0);
-      setShowResult(true);
     } finally {
       stopCameraMic();
       exitFullscreenSafely();
@@ -193,8 +219,7 @@ export default function MCQTestPage() {
 
   return (
     <>
-      {/* Hidden camera */}
-      <video ref={videoRef} className="camera-preview" muted />
+      <video ref={videoRef} className="camera-preview" />
 
       <div className={`exam-wrapper ${showResult ? "blur" : ""}`}>
         <div className="progress-bar">
@@ -237,6 +262,20 @@ export default function MCQTestPage() {
         </div>
       </div>
 
+      {/* TAB WARNING POPUP (SECOND TIME ONLY) */}
+      {showTabWarning && (
+        <div className="modal-overlay">
+          <div className="result-modal">
+            <h2>Warning ⚠️</h2>
+            <p>Tab switching is not allowed again.</p>
+            <button onClick={() => setShowTabWarning(false)}>
+              Continue Test
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* RESULT */}
       {showResult && (
         <div className="modal-overlay">
           <div className="result-modal">
