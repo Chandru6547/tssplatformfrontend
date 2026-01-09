@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { login } from "../utils/auth";
 import "./LoginPage.css";
-import loginImg from "../assests/WhatsApp Image 2026-01-04 at 7.07.45 PM.jpeg";
+import loginImg from "../assests/Login.png";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");

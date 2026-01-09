@@ -39,7 +39,6 @@ export default function SubmissionListPage() {
         );
 
         if (!res.ok) throw new Error("Failed to fetch submissions");
-
         setSubmissions(await res.json());
       } catch (err) {
         console.error(err);
@@ -88,6 +87,36 @@ export default function SubmissionListPage() {
     return Object.values(map);
   }, [selectedStudent, submissions]);
 
+  /* ---------------- DOWNLOAD CSV ---------------- */
+  const downloadExcel = () => {
+    if (students.length === 0) return;
+
+    const headers = ["Student Name", "Email", "Solved Count"];
+
+    const rows = students.map(s => [
+      s.name,
+      s.email,
+      s.solvedCount
+    ]);
+
+    const csvContent = [
+      headers.join(","),
+      ...rows.map(row =>
+        row.map(v => `"${String(v).replace(/"/g, '""')}"`).join(",")
+      )
+    ].join("\n");
+
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${college}_${batch}_Solved_Report.csv`;
+    a.click();
+
+    URL.revokeObjectURL(url);
+  };
+
   /* ---------------- UI STATES ---------------- */
   if (loading) return <p className="status">Loading report…</p>;
   if (error) return <p className="status error">{error}</p>;
@@ -104,17 +133,22 @@ export default function SubmissionListPage() {
           </div>
         </div>
 
-        {/* ✅ NEW BUTTON */}
-        <button
-          className="mcq-report-btn"
-          onClick={() =>
-            navigate("/report/mcqs", {
-              state: { college, year, batch }
-            })
-          }
-        >
-          View MCQs Report
-        </button>
+        <div className="header-actions">
+          <button className="download-btn" onClick={downloadExcel}>
+            ⬇ Download Excel
+          </button>
+
+          <button
+            className="mcq-report-btn"
+            onClick={() =>
+              navigate("/report/mcqs", {
+                state: { college, year, batch }
+              })
+            }
+          >
+            View MCQs Report
+          </button>
+        </div>
       </div>
 
       {/* STUDENT TABLE */}
@@ -139,9 +173,7 @@ export default function SubmissionListPage() {
                 <td className="student-name-cell">{stu.name}</td>
                 <td className="student-email-cell">{stu.email}</td>
                 <td>
-                  <span className="solved-badge">
-                    {stu.solvedCount}
-                  </span>
+                  <span className="solved-badge">{stu.solvedCount}</span>
                 </td>
               </tr>
             ))}
@@ -158,7 +190,12 @@ export default function SubmissionListPage() {
                 <h3>{selectedStudent.name}</h3>
                 <p>{selectedStudent.email}</p>
               </div>
-              <button className="close-btn" onClick={() => setSelectedStudent(null)}>✕</button>
+              <button
+                className="close-btn"
+                onClick={() => setSelectedStudent(null)}
+              >
+                ✕
+              </button>
             </div>
 
             <div className="modal-body">
@@ -187,8 +224,14 @@ export default function SubmissionListPage() {
 
       {/* ---------------- CODE MODAL ---------------- */}
       {selectedSubmission && (
-        <div className="modal-overlay" onClick={() => setSelectedSubmission(null)}>
-          <div className="modal-box large" onClick={e => e.stopPropagation()}>
+        <div
+          className="modal-overlay"
+          onClick={() => setSelectedSubmission(null)}
+        >
+          <div
+            className="modal-box large"
+            onClick={e => e.stopPropagation()}
+          >
             <div className="modal-header">
               <div>
                 <h3>{selectedSubmission.questionTitle}</h3>
@@ -197,12 +240,15 @@ export default function SubmissionListPage() {
                   {new Date(selectedSubmission.createdAt).toLocaleString()}
                 </p>
               </div>
-              <button className="close-btn" onClick={() => setSelectedSubmission(null)}>✕</button>
+              <button
+                className="close-btn"
+                onClick={() => setSelectedSubmission(null)}
+              >
+                ✕
+              </button>
             </div>
 
-            <pre className="code-view">
-              {selectedSubmission.code}
-            </pre>
+            <pre className="code-view">{selectedSubmission.code}</pre>
           </div>
         </div>
       )}

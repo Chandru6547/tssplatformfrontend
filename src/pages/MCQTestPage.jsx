@@ -15,6 +15,7 @@ export default function MCQTestPage() {
   const [score, setScore] = useState(0);
   const [submitting, setSubmitting] = useState(false);
 
+  /* CAMERA */
   const videoRef = useRef(null);
   const streamRef = useRef(null);
   const cameraStartedRef = useRef(false);
@@ -38,33 +39,57 @@ export default function MCQTestPage() {
     }
   };
 
-  /* ---------- CAMERA + MIC ---------- */
+  /* ---------- CAMERA + MIC (BLACK SCREEN FIXED) ---------- */
   const startCameraMic = async () => {
     if (cameraStartedRef.current) return;
 
-    const stream = await navigator.mediaDevices.getUserMedia({
-      video: { facingMode: "user" },
-      audio: true
-    });
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: {
+          facingMode: "user",
+          width: { ideal: 640 },
+          height: { ideal: 480 }
+        },
+        audio: true
+      });
 
-    streamRef.current = stream;
-    cameraStartedRef.current = true;
+      streamRef.current = stream;
+      cameraStartedRef.current = true;
 
-    const video = videoRef.current;
-    if (video) {
+      const video = videoRef.current;
+      if (!video) return;
+
+      // HARD RESET (fixes black screen)
+      video.pause();
+      video.srcObject = null;
+
       video.srcObject = stream;
       video.muted = true;
       video.playsInline = true;
+      video.autoplay = true;
 
-      await new Promise(resolve => (video.onloadedmetadata = resolve));
+      // Force reflow
+      video.style.display = "none";
+      // video.offsetHeight;
+      video.style.display = "block";
+
+      await new Promise(resolve => {
+        video.onloadedmetadata = () => resolve();
+      });
+
       await video.play();
-    }
 
-    stream.getTracks().forEach(track => {
-      track.onended = () => {
-        if (!showResult) submitTest(true);
-      };
-    });
+      // Auto submit if camera/mic stops
+      stream.getTracks().forEach(track => {
+        track.onended = () => {
+          if (!showResult) submitTest(true);
+        };
+      });
+    } catch (err) {
+      alert("Camera & microphone permission is mandatory");
+      console.error(err);
+      throw err;
+    }
   };
 
   const stopCameraMic = () => {
@@ -118,11 +143,11 @@ export default function MCQTestPage() {
       tabSwitchCountRef.current += 1;
 
       if (tabSwitchCountRef.current === 2) {
-        setShowTabWarning(true); // popup only second time
+        setShowTabWarning(true);
       }
 
       if (tabSwitchCountRef.current >= 3) {
-        submitTest(true); // auto submit third time
+        submitTest(true);
       }
     };
 
@@ -143,9 +168,13 @@ export default function MCQTestPage() {
 
   /* ---------- START TEST ---------- */
   const startTest = async () => {
-    await startCameraMic();
-    await enterFullscreen();
-    setStarted(true);
+    try {
+      await startCameraMic();   // FIRST camera
+      await enterFullscreen();  // THEN fullscreen
+      setStarted(true);
+    } catch {
+      exitFullscreenSafely();
+    }
   };
 
   if (!mcq) return null;
@@ -158,7 +187,7 @@ export default function MCQTestPage() {
         <ul className="rules">
           <li>Fullscreen mandatory</li>
           <li>Camera & microphone ON</li>
-          <li>Tab switch monitored</li>
+          <li>Tab switching monitored</li>
         </ul>
         <button className="start-btn" onClick={startTest}>
           Start Test
@@ -219,7 +248,14 @@ export default function MCQTestPage() {
 
   return (
     <>
-      <video ref={videoRef} className="camera-preview" />
+      {/* CAMERA PREVIEW */}
+      <video
+        ref={videoRef}
+        className="camera-preview"
+        muted
+        autoPlay
+        playsInline
+      />
 
       <div className={`exam-wrapper ${showResult ? "blur" : ""}`}>
         <div className="progress-bar">
@@ -262,12 +298,12 @@ export default function MCQTestPage() {
         </div>
       </div>
 
-      {/* TAB WARNING POPUP (SECOND TIME ONLY) */}
+      {/* TAB WARNING */}
       {showTabWarning && (
         <div className="modal-overlay">
           <div className="result-modal">
             <h2>Warning ⚠️</h2>
-            <p>Tab switching is not allowed again.</p>
+            <p>Do not switch tabs again.</p>
             <button onClick={() => setShowTabWarning(false)}>
               Continue Test
             </button>

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import * as XLSX from "xlsx";
 import "./MCQReportPage.css";
 
 export default function MCQReportPage() {
@@ -59,7 +60,7 @@ export default function MCQReportPage() {
   }, [mcqs]);
 
   /* ---------------------------------------------
-     FETCH REPORT BY BATCH + MCQ
+     FETCH REPORT
   --------------------------------------------- */
   const handleSelectMCQ = async (mcqId) => {
     if (!mcqId) return;
@@ -94,6 +95,31 @@ export default function MCQReportPage() {
   };
 
   /* ---------------------------------------------
+     DOWNLOAD EXCEL
+  --------------------------------------------- */
+  const downloadExcel = () => {
+    if (report.length === 0) return;
+
+    const excelData = report.map((r, i) => ({
+      "S.No": i + 1,
+      "Student Name": r.student?.name || "Unknown",
+      "Email": r.student?.email || "-",
+      "Score": r.score,
+      "Total Marks": r.totalMarks,
+      "Questions Attempted": r.studentAttemptedCount
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(excelData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "MCQ Report");
+
+    const topic = report[0]?.mcqTopic || "MCQ_Report";
+    const fileName = `${college}_Year${year}_${batch}_${topic}.xlsx`;
+
+    XLSX.writeFile(workbook, fileName);
+  };
+
+  /* ---------------------------------------------
      UI STATES
   --------------------------------------------- */
   if (error) return <p className="status error">{error}</p>;
@@ -109,9 +135,16 @@ export default function MCQReportPage() {
           </p>
         </div>
 
-        <button className="back-btn" onClick={() => navigate(-1)}>
-          ← Back
-        </button>
+        <div className="header-actions">
+          {report.length > 0 && (
+            <button className="download-btn" onClick={downloadExcel}>
+              ⬇ Download Excel
+            </button>
+          )}
+          <button className="back-btn" onClick={() => navigate(-1)}>
+            ← Back
+          </button>
+        </div>
       </div>
 
       {/* DROPDOWN */}
