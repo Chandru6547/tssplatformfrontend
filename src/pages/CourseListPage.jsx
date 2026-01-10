@@ -131,21 +131,42 @@ export default function CourseListPage() {
         )}
       </div>
 
-      <div className="course-grid">
-        {courses.map(course => (
-          <div key={course._id} className="course-card">
-            <h3>{course.name}</h3>
+     <div className="course-grid">
+        {courses.length === 0 ? (
+          <div className="no-course-wrapper">
+            <div className="no-course-card">
+              <h3>No Courses Found</h3>
+              <p>
+                There are currently no courses available for you.
+                {role === "admin" && " Start by adding a new course."}
+              </p>
 
-            <button
-              className="course-btn"
-              onClick={() =>
-                navigate(`/courses/${course._id}/categories`)
-              }
-            >
-              View Categories →
-            </button>
+              {role === "admin" && (
+                <button
+                  className="add-course-btn"
+                  onClick={() => setShowAddDialog(true)}
+                >
+                  + Add Course
+                </button>
+              )}
+            </div>
           </div>
-        ))}
+        ) : (
+          courses.map(course => (
+            <div key={course._id} className="course-card">
+              <h3>{course.name}</h3>
+
+              <button
+                className="course-btn"
+                onClick={() =>
+                  navigate(`/courses/${course._id}/categories`)
+                }
+              >
+                View Categories →
+              </button>
+            </div>
+          ))
+        )}
       </div>
 
       {role === "admin" && showAddDialog && (

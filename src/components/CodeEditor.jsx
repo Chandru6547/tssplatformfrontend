@@ -7,7 +7,7 @@ export default function CodeEditor({ language, code, setCode }) {
     // Disable right-click context menu
     editor.updateOptions({
       contextmenu: false,
-      dragAndDrop : true
+      dragAndDrop : false
     });
 
     // Helper to block commands

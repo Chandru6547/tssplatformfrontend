@@ -217,146 +217,354 @@ export default function QuestionUploadPage() {
   return (
     <div className="page-root">
       <div className="main-card">
-
-        <h2 className="page-heading">Create Question</h2>
-
-        {/* TITLE */}
-        <div className="form-group">
-          <label>Title</label>
-          <input value={title} onChange={e => setTitle(e.target.value)} />
-          {errors.title && <p className="error-text">{errors.title}</p>}
+        {/* Header Section */}
+        <div className="page-header">
+          <div className="header-content">
+            <h1 className="page-title">
+              {questionId ? "✏️ Edit Question" : "➕ Create New Question"}
+            </h1>
+            <p className="page-subtitle">
+              {questionId
+                ? "Update the question details and test cases"
+                : "Fill in the details to create a programming question"
+              }
+            </p>
+          </div>
+          {loading && (
+            <div className="loading-indicator">
+              <div className="spinner"></div>
+              <span>Saving...</span>
+            </div>
+          )}
         </div>
 
-        {/* COURSE */}
-        <div className="form-group">
-          <label>Course</label>
-          <select value={courseId} onChange={e => setCourseId(e.target.value)}>
-            <option value="">Select Course</option>
-            {courses.map(c => (
-              <option key={c._id} value={c._id}>{c.name}</option>
-            ))}
-          </select>
-          {errors.courseId && <p className="error-text">{errors.courseId}</p>}
+        {/* Basic Information Section */}
+        <div className="form-section">
+          <div className="section-header">
+            <h3 className="section-title">📋 Basic Information</h3>
+            <div className="section-divider"></div>
+          </div>
+
+          <div className="form-grid">
+            {/* TITLE */}
+            <div className="form-group full-width">
+              <label className="form-label">
+                <span className="label-icon">📝</span>
+                Question Title
+              </label>
+              <input
+                type="text"
+                value={title}
+                onChange={e => setTitle(e.target.value)}
+                placeholder="Enter a clear, descriptive title..."
+                className={errors.title ? "error" : ""}
+              />
+              {errors.title && (
+                <div className="error-message">
+                  <span className="error-icon">⚠️</span>
+                  {errors.title}
+                </div>
+              )}
+            </div>
+
+            {/* COURSE & CATEGORY */}
+            <div className="form-group">
+              <label className="form-label">
+                <span className="label-icon">🎓</span>
+                Course
+              </label>
+              <select
+                value={courseId}
+                onChange={e => setCourseId(e.target.value)}
+                className={errors.courseId ? "error" : ""}
+              >
+                <option value="">Select a course...</option>
+                {courses.map(c => (
+                  <option key={c._id} value={c._id}>{c.name}</option>
+                ))}
+              </select>
+              {errors.courseId && (
+                <div className="error-message">
+                  <span className="error-icon">⚠️</span>
+                  {errors.courseId}
+                </div>
+              )}
+            </div>
+
+            <div className="form-group">
+              <label className="form-label">
+                <span className="label-icon">📂</span>
+                Category
+              </label>
+              <select
+                value={categoryId}
+                onChange={e => setCategoryId(e.target.value)}
+                disabled={!courseId}
+                className={errors.categoryId ? "error" : ""}
+              >
+                <option value="">
+                  {courseId ? "Select a category..." : "Select course first"}
+                </option>
+                {categories.map(cat => (
+                  <option key={cat._id} value={cat._id}>{cat.name}</option>
+                ))}
+              </select>
+              {errors.categoryId && (
+                <div className="error-message">
+                  <span className="error-icon">⚠️</span>
+                  {errors.categoryId}
+                </div>
+              )}
+            </div>
+
+            {/* DIFFICULTY */}
+            <div className="form-group">
+              <label className="form-label">
+                <span className="label-icon">📊</span>
+                Difficulty Level
+              </label>
+              <select value={difficulty} onChange={e => setDifficulty(e.target.value)}>
+                <option value="Easy">🟢 Easy</option>
+                <option value="Medium">🟡 Medium</option>
+                <option value="Hard">🔴 Hard</option>
+              </select>
+            </div>
+          </div>
         </div>
 
-        {/* CATEGORY */}
-        <div className="form-group">
-          <label>Category</label>
-          <select
-            value={categoryId}
-            onChange={e => setCategoryId(e.target.value)}
-            disabled={!courseId}
-          >
-            <option value="">Select Category</option>
-            {categories.map(cat => (
-              <option key={cat._id} value={cat._id}>{cat.name}</option>
-            ))}
-          </select>
-          {errors.categoryId && <p className="error-text">{errors.categoryId}</p>}
-        </div>
+        {/* Description Section */}
+        <div className="form-section">
+          <div className="section-header">
+            <h3 className="section-title">📖 Problem Description</h3>
+            <div className="section-divider"></div>
+          </div>
 
-        {/* DIFFICULTY */}
-        <div className="form-group">
-          <label>Difficulty</label>
-          <select value={difficulty} onChange={e => setDifficulty(e.target.value)}>
-            <option>Easy</option>
-            <option>Medium</option>
-            <option>Hard</option>
-          </select>
-        </div>
-
-        {/* DESCRIPTION */}
-        <div className="form-group">
-          <label>Description</label>
-          <div ref={quillContainerRef} className="quill-box" />
-          {errors.description && <p className="error-text">{errors.description}</p>}
-        </div>
-
-        {/* ⭐ PREDEFINED TOGGLE */}
-        <div className="form-group checkbox-row">
-          <input
-            type="checkbox"
-            checked={isPredefinedOnly}
-            onChange={e => setIsPredefinedOnly(e.target.checked)}
-          />
-          <label>Use predefined starter code</label>
-        </div>
-
-        {/* ⭐ PREDEFINED CODE INPUTS */}
-        {isPredefinedOnly && (
-          <div className="predefined-section">
-            <h4>Predefined Code</h4>
-            {predefinedCode.map(p => (
-              <div className="form-group" key={p.language}>
-                <label>{p.language.toUpperCase()}</label>
-                <textarea
-                  rows={6}
-                  value={p.code}
-                  placeholder="// WRITE YOUR CODE HERE"
-                  onChange={e => updatePredefined(p.language, e.target.value)}
-                />
+          <div className="form-group">
+            <label className="form-label">
+              <span className="label-icon">📝</span>
+              Detailed Description
+            </label>
+            <div className={`quill-wrapper ${errors.description ? "error" : ""}`}>
+              <div ref={quillContainerRef} className="quill-box" />
+            </div>
+            {errors.description && (
+              <div className="error-message">
+                <span className="error-icon">⚠️</span>
+                {errors.description}
               </div>
-            ))}
-            {errors.predefinedCode && (
-              <p className="error-text">{errors.predefinedCode}</p>
             )}
           </div>
-        )}
+        </div>
 
-        {/* SAMPLE TESTCASES */}
-        <div className="section-title">Sample Testcases</div>
-        {sampleTestcases.map((t, i) => (
-          <div className="testcase-row" key={i}>
-            <textarea
-              placeholder="Input"
-              value={t.input}
-              onChange={e => update(sampleTestcases, setSampleTestcases, i, "input", e.target.value)}
-            />
-            <textarea
-              placeholder="Output"
-              value={t.output}
-              onChange={e => update(sampleTestcases, setSampleTestcases, i, "output", e.target.value)}
-            />
+        {/* Predefined Code Section */}
+        <div className="form-section">
+          <div className="section-header">
+            <h3 className="section-title">💻 Starter Code (Optional)</h3>
+            <div className="section-divider"></div>
           </div>
-        ))}
-        {errors.sampleTestcases && <p className="error-text">{errors.sampleTestcases}</p>}
 
-        <button className="link-btn" onClick={() =>
-          setSampleTestcases([...sampleTestcases, { input: "", output: "" }])
-        }>
-          Add Sample Testcase
-        </button>
-
-        {/* HIDDEN TESTCASES */}
-        <div className="section-title">Hidden Testcases</div>
-        {hiddenTestcases.map((t, i) => (
-          <div className="testcase-row" key={i}>
-            <textarea
-              placeholder="Input"
-              value={t.input}
-              onChange={e => update(hiddenTestcases, setHiddenTestcases, i, "input", e.target.value)}
+          <div className="predefined-toggle">
+            <input
+              type="checkbox"
+              id="predefined-toggle"
+              checked={isPredefinedOnly}
+              onChange={e => setIsPredefinedOnly(e.target.checked)}
             />
-            <textarea
-              placeholder="Output"
-              value={t.output}
-              onChange={e => update(hiddenTestcases, setHiddenTestcases, i, "output", e.target.value)}
-            />
+            <label htmlFor="predefined-toggle" className="toggle-label">
+              Provide starter code templates for students
+            </label>
           </div>
-        ))}
-        {errors.hiddenTestcases && <p className="error-text">{errors.hiddenTestcases}</p>}
 
-        <button className="link-btn" onClick={() =>
-          setHiddenTestcases([...hiddenTestcases, { input: "", output: "" }])
-        }>
-          Add Hidden Testcase
-        </button>
+          {isPredefinedOnly && (
+            <div className="predefined-section">
+              <div className="code-grid">
+                {predefinedCode.map(p => (
+                  <div className="code-block" key={p.language}>
+                    <div className="code-header">
+                      <span className="language-badge">{p.language.toUpperCase()}</span>
+                    </div>
+                    <textarea
+                      value={p.code}
+                      onChange={e => updatePredefined(p.language, e.target.value)}
+                      placeholder={`// Write ${p.language} starter code here...`}
+                      className="code-textarea"
+                      spellCheck="false"
+                    />
+                  </div>
+                ))}
+              </div>
+              {errors.predefinedCode && (
+                <div className="error-message section-error">
+                  <span className="error-icon">⚠️</span>
+                  {errors.predefinedCode}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
 
-        {/* SUBMIT */}
-        <div className="footer">
-          <button className="primary-btn" onClick={submit} disabled={loading}>
-            {loading
-              ? (questionId ? "Updating..." : "Publishing...")
-              : (questionId ? "Update Question" : "Publish Question")}
+        {/* Test Cases Section */}
+        <div className="form-section">
+          <div className="section-header">
+            <h3 className="section-title">🧪 Test Cases</h3>
+            <div className="section-divider"></div>
+          </div>
+
+          {/* Sample Test Cases */}
+          <div className="testcase-section">
+            <div className="testcase-header">
+              <h4 className="testcase-title">Sample Test Cases</h4>
+              <span className="testcase-info">Visible to students</span>
+            </div>
+
+            <div className="testcase-list">
+              {sampleTestcases.map((testcase, i) => (
+                <div className="testcase-item" key={i}>
+                  <div className="testcase-number">#{i + 1}</div>
+                  <div className="testcase-inputs">
+                    <div className="input-group">
+                      <label className="input-label">Input</label>
+                      <textarea
+                        value={testcase.input}
+                        onChange={e => update(sampleTestcases, setSampleTestcases, i, "input", e.target.value)}
+                        placeholder="Enter test input..."
+                        className="testcase-textarea"
+                      />
+                    </div>
+                    <div className="input-group">
+                      <label className="input-label">Expected Output</label>
+                      <textarea
+                        value={testcase.output}
+                        onChange={e => update(sampleTestcases, setSampleTestcases, i, "output", e.target.value)}
+                        placeholder="Enter expected output..."
+                        className="testcase-textarea"
+                      />
+                    </div>
+                  </div>
+                  {sampleTestcases.length > 1 && (
+                    <button
+                      type="button"
+                      className="remove-btn"
+                      onClick={() => {
+                        const updated = sampleTestcases.filter((_, idx) => idx !== i);
+                        setSampleTestcases(updated);
+                      }}
+                    >
+                      ✕
+                    </button>
+                  )}
+                </div>
+              ))}
+            </div>
+
+            <button
+              type="button"
+              className="add-testcase-btn"
+              onClick={() => setSampleTestcases([...sampleTestcases, { input: "", output: "" }])}
+            >
+              <span className="btn-icon">+</span>
+              Add Sample Test Case
+            </button>
+
+            {errors.sampleTestcases && (
+              <div className="error-message section-error">
+                <span className="error-icon">⚠️</span>
+                {errors.sampleTestcases}
+              </div>
+            )}
+          </div>
+
+          {/* Hidden Test Cases */}
+          <div className="testcase-section">
+            <div className="testcase-header">
+              <h4 className="testcase-title">Hidden Test Cases</h4>
+              <span className="testcase-info">Used for evaluation only</span>
+            </div>
+
+            <div className="testcase-list">
+              {hiddenTestcases.map((testcase, i) => (
+                <div className="testcase-item" key={i}>
+                  <div className="testcase-number">#{i + 1}</div>
+                  <div className="testcase-inputs">
+                    <div className="input-group">
+                      <label className="input-label">Input</label>
+                      <textarea
+                        value={testcase.input}
+                        onChange={e => update(hiddenTestcases, setHiddenTestcases, i, "input", e.target.value)}
+                        placeholder="Enter test input..."
+                        className="testcase-textarea"
+                      />
+                    </div>
+                    <div className="input-group">
+                      <label className="input-label">Expected Output</label>
+                      <textarea
+                        value={testcase.output}
+                        onChange={e => update(hiddenTestcases, setHiddenTestcases, i, "output", e.target.value)}
+                        placeholder="Enter expected output..."
+                        className="testcase-textarea"
+                      />
+                    </div>
+                  </div>
+                  {hiddenTestcases.length > 1 && (
+                    <button
+                      type="button"
+                      className="remove-btn"
+                      onClick={() => {
+                        const updated = hiddenTestcases.filter((_, idx) => idx !== i);
+                        setHiddenTestcases(updated);
+                      }}
+                    >
+                      ✕
+                    </button>
+                  )}
+                </div>
+              ))}
+            </div>
+
+            <button
+              type="button"
+              className="add-testcase-btn"
+              onClick={() => setHiddenTestcases([...hiddenTestcases, { input: "", output: "" }])}
+            >
+              <span className="btn-icon">+</span>
+              Add Hidden Test Case
+            </button>
+
+            {errors.hiddenTestcases && (
+              <div className="error-message section-error">
+                <span className="error-icon">⚠️</span>
+                {errors.hiddenTestcases}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Action Buttons */}
+        <div className="form-actions">
+          <button
+            type="button"
+            className="secondary-btn"
+            onClick={() => window.history.back()}
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            className="primary-btn"
+            onClick={submit}
+            disabled={loading}
+          >
+            {loading ? (
+              <>
+                <div className="btn-spinner"></div>
+                {questionId ? "Updating..." : "Creating..."}
+              </>
+            ) : (
+              <>
+                <span className="btn-icon">✓</span>
+                {questionId ? "Update Question" : "Create Question"}
+              </>
+            )}
           </button>
         </div>
       </div>
@@ -364,12 +572,29 @@ export default function QuestionUploadPage() {
       {/* SUCCESS POPUP */}
       {showPopup && (
         <div className="popup-overlay">
-          <div className="popup-card">
-            <h3>✅ Question {questionId ? "Updated" : "Created"}</h3>
-            <p>Your question has been successfully saved.</p>
-            <button className="primary-btn" onClick={() => setShowPopup(false)}>
-              OK
-            </button>
+          <div className="popup-card success-popup">
+            <div className="popup-icon">🎉</div>
+            <h3 className="popup-title">Success!</h3>
+            <p className="popup-message">
+              Question has been {questionId ? "updated" : "created"} successfully.
+            </p>
+            <div className="popup-actions">
+              <button
+                className="secondary-btn"
+                onClick={() => {
+                  setShowPopup(false);
+                  window.history.back();
+                }}
+              >
+                Back to List
+              </button>
+              <button
+                className="primary-btn"
+                onClick={() => setShowPopup(false)}
+              >
+                {questionId ? "Continue Editing" : "Create Another"}
+              </button>
+            </div>
           </div>
         </div>
       )}
