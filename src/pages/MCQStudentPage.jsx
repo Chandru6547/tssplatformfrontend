@@ -5,11 +5,13 @@ import "./MCQStudentPage.css";
 
 export default function MCQStudentPage() {
   const [mcqs, setMcqs] = useState([]);
+  const [completedMap, setCompletedMap] = useState({});
   const [pageLoading, setPageLoading] = useState(true);
 
   const navigate = useNavigate();
+  const studentId = getUserId();
 
-  /* ---------- FETCH MCQS (MIN 3s LOADER) ---------- */
+  /* ---------- FETCH MCQS ---------- */
   const fetchMCQs = async () => {
     setPageLoading(true);
     const startTime = Date.now();
@@ -23,9 +25,7 @@ export default function MCQStudentPage() {
             "Content-Type": "application/json",
             Authorization: `Bearer ${getToken()}`
           },
-          body: JSON.stringify({
-            studentId: getUserId()
-          })
+          body: JSON.stringify({ studentId })
         }
       );
 
@@ -36,14 +36,48 @@ export default function MCQStudentPage() {
       }
 
       const data = await res.json();
-      setMcqs(Array.isArray(data) ? data : []);
+      const mcqList = Array.isArray(data) ? data : [];
+      setMcqs(mcqList);
+
+      await checkCompletedMCQs(mcqList);
     } catch (err) {
       console.error("Failed to load MCQs", err);
       setMcqs([]);
     } finally {
       const elapsed = Date.now() - startTime;
-      const remaining = Math.max(3000 - elapsed, 0);
-      setTimeout(() => setPageLoading(false), remaining);
+      setTimeout(() => setPageLoading(false), Math.max(3000 - elapsed, 0));
+    }
+  };
+
+  /* ---------- CHECK COMPLETED MCQS ---------- */
+  const checkCompletedMCQs = async (mcqList) => {
+    try {
+      const requests = mcqList.map(mcq =>
+        fetch(
+          `${process.env.REACT_APP_API_BASE_URL}/api/mcq-submissions/student/${studentId}/mcq/${mcq._id}`,
+          {
+            headers: {
+              Authorization: `Bearer ${getToken()}`
+            }
+          }
+        )
+          .then(res => res.json())
+          .then(data => ({
+            mcqId: mcq._id,
+            completed: Array.isArray(data) && data.length > 0
+          }))
+      );
+
+      const results = await Promise.all(requests);
+
+      const statusMap = {};
+      results.forEach(r => {
+        statusMap[r.mcqId] = r.completed;
+      });
+
+      setCompletedMap(statusMap);
+    } catch (err) {
+      console.error("Failed to check MCQ completion", err);
     }
   };
 
@@ -51,17 +85,15 @@ export default function MCQStudentPage() {
     fetchMCQs();
   }, []);
 
-  /* ---------- HUMAN LOADER ---------- */
+  /* ---------- LOADER ---------- */
   if (pageLoading) {
     return (
       <div className="course-loader">
         <div className="human-loader">
           <div className="head"></div>
           <div className="body"></div>
-
           <div className="arm left-arm"></div>
           <div className="arm right-arm"></div>
-
           <div className="leg left-leg"></div>
           <div className="leg right-leg"></div>
         </div>
@@ -76,6 +108,7 @@ export default function MCQStudentPage() {
     );
   }
 
+  /* ---------- UI ---------- */
   return (
     <div className="course-page">
       <div className="course-header">
@@ -85,31 +118,37 @@ export default function MCQStudentPage() {
         </div>
       </div>
 
-      {/* ---------- EMPTY STATE ---------- */}
       {mcqs.length === 0 ? (
         <div className="empty-state">
           <p>No MCQ tests assigned yet.</p>
         </div>
       ) : (
         <div className="course-grid">
-          {mcqs.map(mcq => (
-            <div key={mcq._id} className="course-card">
-              <h3>{mcq.topic}</h3>
+          {mcqs.map(mcq => {
+            const isCompleted = completedMap[mcq._id];
 
-              <p className="mcq-meta">
-                {mcq.category} · {mcq.questions?.length || 0} Questions
-              </p>
+            return (
+              <div key={mcq._id} className="course-card">
+                <h3>{mcq.topic}</h3>
 
-              <button
-                className="course-btn"
-                onClick={() =>
-                  navigate(`/mcqs/test/${mcq._id}`)
-                }
-              >
-                Start Test →
-              </button>
-            </div>
-          ))}
+                <p className="mcq-meta">
+                  {mcq.category} · {mcq.questions?.length || 0} Questions
+                </p>
+
+                {isCompleted && (
+                  <span className="completed-badge">Completed</span>
+                )}
+
+                <button
+                  className="course-btn"
+                  disabled={isCompleted}
+                  onClick={() => navigate(`/mcqs/test/${mcq._id}`)}
+                >
+                  {isCompleted ? "Completed ✓" : "Start Test →"}
+                </button>
+              </div>
+            );
+          })}
         </div>
       )}
     </div>
