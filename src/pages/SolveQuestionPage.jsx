@@ -5,7 +5,6 @@ import { getToken, logout, getUserId } from "../utils/auth";
 import "./SolveQuestionPage.css";
 import HumanLoader from "../components/loaders/HumanLoader";
 
-
 export default function SolveQuestionPage() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -15,6 +14,13 @@ export default function SolveQuestionPage() {
   const [code, setCode] = useState("");
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
+
+  /* ================= HELPER (ADDED) ================= */
+  const getPredefinedCodeForLanguage = (question, lang) => {
+    if (!question?.predefinedCode) return "";
+    const found = question.predefinedCode.find(p => p.language === lang);
+    return found ? found.code : "";
+  };
 
   /* ---------------- FETCH QUESTION ---------------- */
   useEffect(() => {
@@ -35,7 +41,8 @@ export default function SolveQuestionPage() {
           return;
         }
 
-        setQuestion(await res.json());
+        const resu = await res.json();
+        setQuestion(resu);
       } catch (err) {
         console.error("Failed to load question", err);
       }
@@ -43,6 +50,26 @@ export default function SolveQuestionPage() {
 
     fetchQuestion();
   }, [id, navigate]);
+
+  /* ========== LOAD PREDEFINED CODE ON QUESTION LOAD (ADDED) ========== */
+  useEffect(() => {
+    if (!question) return;
+
+    if (question.isPredefinedOnly) {
+      const starterCode = getPredefinedCodeForLanguage(question, language);
+      setCode(starterCode);
+    }
+  }, [question]);
+
+  /* ========== SWITCH PREDEFINED CODE ON LANGUAGE CHANGE (ADDED) ========== */
+  useEffect(() => {
+    if (!question) return;
+
+    if (question.isPredefinedOnly) {
+      const starterCode = getPredefinedCodeForLanguage(question, language);
+      setCode(starterCode);
+    }
+  }, [language]);
 
   /* ---------------- RUN SAMPLE ---------------- */
   const runSample = async () => {
@@ -113,11 +140,11 @@ export default function SolveQuestionPage() {
 
   if (!question) {
     return (
-          <HumanLoader
-            loadingText="Preparing your problem"
-            successText="Ready to practice!"
-            duration={2000}
-          />
+      <HumanLoader
+        loadingText="Preparing your problem"
+        successText="Ready to practice!"
+        duration={2000}
+      />
     );
   }
 
@@ -204,99 +231,88 @@ export default function SolveQuestionPage() {
       </div>
 
       {/* RESULT */}
-    {result && (
-      <div className="result-panel">
+      {result && (
+        <div className="result-panel">
 
-        {/* SUMMARY CARD */}
-        <div className="result-summary">
+          <div className="result-summary">
+            <div className="summary-left">
+              <span
+                className={`summary-verdict ${
+                  result.verdict === "AC" ? "ok" : "fail"
+                }`}
+              >
+                {result.verdict === "AC" ? "✔ Accepted" : "✖ Wrong Answer"}
+              </span>
 
-          <div className="summary-left">
-            <span
-              className={`summary-verdict ${
-                result.verdict === "AC" ? "ok" : "fail"
-              }`}
-            >
-              {result.verdict === "AC" ? "✔ Accepted" : "✖ Wrong Answer"}
-            </span>
+              <span className="summary-count">
+                {result.passed} / {result.total} testcases passed
+              </span>
+            </div>
 
-            <span className="summary-count">
-              {result.passed} / {result.total} testcases passed
-            </span>
+            {result.submissionId && (
+              <span className="summary-tag">Submission saved</span>
+            )}
           </div>
 
-          {/* SUBMIT ONLY */}
-          {result.submissionId && (
-            <span className="summary-tag">
-              Submission saved
-            </span>
+          {result.submissionId === null && result.results && (
+            <div className="testcase-list">
+              {result.results.map((tc, i) => {
+                const isError =
+                  tc.status !== "PASS" &&
+                  (tc.actual?.includes("error") ||
+                    tc.actual?.includes("Error") ||
+                    tc.actual?.includes("Exception") ||
+                    tc.actual?.includes("In function"));
+
+                return (
+                  <div key={i}>
+
+                    {!isError && (
+                      <div
+                        className={`testcase-card ${
+                          tc.status === "PASS" ? "tc-pass" : "tc-fail"
+                        }`}
+                      >
+                        <div className="tc-header">
+                          <span>Testcase #{i + 1}</span>
+                          <span className="tc-status">{tc.status}</span>
+                        </div>
+
+                        <div className="tc-row">
+                          <label>Input</label>
+                          <pre>{tc.input}</pre>
+                        </div>
+
+                        <div className="tc-row">
+                          <label>Expected</label>
+                          <pre>{tc.expected}</pre>
+                        </div>
+
+                        <div className="tc-row">
+                          <label>Your Output</label>
+                          <pre>{tc.actual}</pre>
+                        </div>
+                      </div>
+                    )}
+
+                    {isError && (
+                      <div className="error-card">
+                        <div className="error-header">
+                          🚨 Error in Testcase #{i + 1}
+                          <span className="error-tag">{tc.status}</span>
+                        </div>
+                        <pre className="error-output">{tc.actual}</pre>
+                      </div>
+                    )}
+
+                  </div>
+                );
+              })}
+            </div>
           )}
+
         </div>
-
-        {/* RUN MODE → FULL DETAILS */}
-        {result.submissionId === null && result.results && (
-          <div className="testcase-list">
-            {result.results.map((tc, i) => {
-              const isError =
-                tc.status !== "PASS" &&
-                (tc.actual?.includes("error") ||
-                  tc.actual?.includes("Error") ||
-                  tc.actual?.includes("Exception") ||
-                  tc.actual?.includes("In function"));
-
-              return (
-                <div key={i}>
-
-                  {/* NORMAL TESTCASE CARD */}
-                  {!isError && (
-                    <div
-                      className={`testcase-card ${
-                        tc.status === "PASS" ? "tc-pass" : "tc-fail"
-                      }`}
-                    >
-                      <div className="tc-header">
-                        <span>Testcase #{i + 1}</span>
-                        <span className="tc-status">{tc.status}</span>
-                      </div>
-
-                      <div className="tc-row">
-                        <label>Input</label>
-                        <pre>{tc.input}</pre>
-                      </div>
-
-                      <div className="tc-row">
-                        <label>Expected</label>
-                        <pre>{tc.expected}</pre>
-                      </div>
-
-                      <div className="tc-row">
-                        <label>Your Output</label>
-                        <pre>{tc.actual}</pre>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* 🚨 ERROR CARD (CE / RE) */}
-                  {isError && (
-                    <div className="error-card">
-                      <div className="error-header">
-                        🚨 Error in Testcase #{i + 1}
-                        <span className="error-tag">{tc.status}</span>
-                      </div>
-
-                      <pre className="error-output">
-                        {tc.actual}
-                      </pre>
-                    </div>
-                  )}
-
-                </div>
-              );
-            })}
-          </div>
-        )}
-
-      </div>
-    )}
+      )}
     </div>
   );
 }

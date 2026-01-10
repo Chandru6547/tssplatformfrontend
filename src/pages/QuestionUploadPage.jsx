@@ -11,18 +11,23 @@ export default function QuestionUploadPage() {
   const navigate = useNavigate();
   const { questionId } = useParams();
 
-  /* ---------------- BASIC FIELDS ---------------- */
   const [title, setTitle] = useState("");
   const [difficulty, setDifficulty] = useState("Easy");
   const [description, setDescription] = useState("");
 
-  /* ---------------- COURSE & CATEGORY ---------------- */
   const [courses, setCourses] = useState([]);
   const [categories, setCategories] = useState([]);
   const [courseId, setCourseId] = useState("");
   const [categoryId, setCategoryId] = useState("");
 
-  /* ---------------- TESTCASES ---------------- */
+  const [isPredefinedOnly, setIsPredefinedOnly] = useState(false);
+  const [predefinedCode, setPredefinedCode] = useState([
+    { language: "python", code: "" },
+    { language: "c", code: "" },
+    { language: "cpp", code: "" },
+    { language: "java", code: "" }
+  ]);
+
   const [sampleTestcases, setSampleTestcases] = useState([
     { input: "", output: "" }
   ]);
@@ -30,7 +35,6 @@ export default function QuestionUploadPage() {
     { input: "", output: "" }
   ]);
 
-  /* ---------------- UI STATES ---------------- */
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
   const [showPopup, setShowPopup] = useState(false);
@@ -63,15 +67,12 @@ export default function QuestionUploadPage() {
   useEffect(() => {
     if (!questionId) return;
 
-    fetch(`${process.env.REACT_APP_API_BASE_URL}/questionsforadmin/${questionId}`, {
-      headers: {
-        Authorization: `Bearer ${getToken()}`
-      }
-    })
+    fetch(
+      `${process.env.REACT_APP_API_BASE_URL}/questionsforadmin/${questionId}`,
+      { headers: { Authorization: `Bearer ${getToken()}` } }
+    )
       .then(res => res.json())
       .then(question => {
-        console.log(question);
-        
         setTitle(question.title);
         setDifficulty(question.difficulty);
         setDescription(question.description);
@@ -80,7 +81,12 @@ export default function QuestionUploadPage() {
         setSampleTestcases(question.sampleTestcases || [{ input: "", output: "" }]);
         setHiddenTestcases(question.hiddenTestcases || [{ input: "", output: "" }]);
 
-        // Set Quill content after it's initialized
+        /* ⭐ LOAD PREDEFINED DATA */
+        setIsPredefinedOnly(question.isPredefinedOnly || false);
+        if (question.predefinedCode) {
+          setPredefinedCode(question.predefinedCode);
+        }
+
         setTimeout(() => {
           if (quillInstanceRef.current) {
             quillInstanceRef.current.root.innerHTML = question.description;
@@ -93,16 +99,14 @@ export default function QuestionUploadPage() {
   /* ---------------- FETCH COURSES ---------------- */
   useEffect(() => {
     fetch(`${process.env.REACT_APP_API_BASE_URL}/courses`, {
-      headers: {
-        Authorization: `Bearer ${getToken()}`
-      }
+      headers: { Authorization: `Bearer ${getToken()}` }
     })
       .then(res => res.json())
       .then(setCourses)
       .catch(console.error);
   }, []);
 
-  /* ---------------- FETCH CATEGORIES (BY COURSE) ---------------- */
+  /* ---------------- FETCH CATEGORIES ---------------- */
   useEffect(() => {
     if (!courseId) {
       setCategories([]);
@@ -110,11 +114,10 @@ export default function QuestionUploadPage() {
       return;
     }
 
-    fetch(`${process.env.REACT_APP_API_BASE_URL}/categories?courseId=${courseId}`, {
-      headers: {
-        Authorization: `Bearer ${getToken()}`
-      }
-    })
+    fetch(
+      `${process.env.REACT_APP_API_BASE_URL}/categories?courseId=${courseId}`,
+      { headers: { Authorization: `Bearer ${getToken()}` } }
+    )
       .then(res => res.json())
       .then(setCategories)
       .catch(console.error);
@@ -127,14 +130,19 @@ export default function QuestionUploadPage() {
     setList(updated);
   };
 
-  /* ---------------- VALIDATION ---------------- */
+  const updatePredefined = (lang, value) => {
+    setPredefinedCode(prev =>
+      prev.map(p => (p.language === lang ? { ...p, code: value } : p))
+    );
+  };
+
+  /* ---------------- VALIDATION (UNCHANGED + ADDITION) ---------------- */
   const validate = () => {
     const e = {};
 
     if (!title.trim()) e.title = "Title is required";
     if (!courseId) e.courseId = "Course is required";
     if (!categoryId) e.categoryId = "Category is required";
-
     if (!description || description === "<p><br></p>")
       e.description = "Description is required";
 
@@ -144,6 +152,12 @@ export default function QuestionUploadPage() {
     if (!hiddenTestcases.some(t => t.input.trim() && t.output.trim()))
       e.hiddenTestcases = "At least one valid hidden testcase is required";
 
+    if (isPredefinedOnly) {
+      const hasCode = predefinedCode.some(p => p.code.trim());
+      if (!hasCode)
+        e.predefinedCode = "Add predefined code for at least one language";
+    }
+
     setErrors(e);
     return Object.keys(e).length === 0;
   };
@@ -151,12 +165,14 @@ export default function QuestionUploadPage() {
   /* ---------------- SUBMIT ---------------- */
   const submit = async () => {
     if (!validate()) return;
-
     setLoading(true);
 
     try {
       const isEditing = !!questionId;
-      const url = isEditing ? `${process.env.REACT_APP_API_BASE_URL}/questions/${questionId}` : `${process.env.REACT_APP_API_BASE_URL}/questions`;
+      const url = isEditing
+        ? `${process.env.REACT_APP_API_BASE_URL}/questions/${questionId}`
+        : `${process.env.REACT_APP_API_BASE_URL}/questions`;
+
       const method = isEditing ? "PUT" : "POST";
 
       const res = await fetch(url, {
@@ -172,7 +188,11 @@ export default function QuestionUploadPage() {
           courseId,
           categoryId,
           sampleTestcases,
-          hiddenTestcases
+          hiddenTestcases,
+
+          /* ⭐ PREDEFINED PAYLOAD */
+          isPredefinedOnly,
+          predefinedCode: isPredefinedOnly ? predefinedCode : []
         })
       });
 
@@ -185,36 +205,15 @@ export default function QuestionUploadPage() {
       if (!res.ok) throw new Error("Failed");
 
       setShowPopup(true);
-
-      if (!isEditing) {
-        /* RESET FORM */
-        setTitle("");
-        setDifficulty("Easy");
-        setCourseId("");
-        setCategoryId("");
-        setDescription("");
-        quillInstanceRef.current.root.innerHTML = "";
-        setSampleTestcases([{ input: "", output: "" }]);
-        setHiddenTestcases([{ input: "", output: "" }]);
-        setErrors({});
-      }
-      setTitle("");
-        setDifficulty("Easy");
-        setCourseId("");
-        setCategoryId("");
-        setDescription("");
-        quillInstanceRef.current.root.innerHTML = "";
-        setSampleTestcases([{ input: "", output: "" }]);
-        setHiddenTestcases([{ input: "", output: "" }]);
-        setErrors({});
     } catch (err) {
-      alert(`Error ${questionId ? 'updating' : 'creating'} question`);
+      alert(`Error ${questionId ? "updating" : "creating"} question`);
       console.error(err);
     } finally {
       setLoading(false);
     }
   };
 
+  /* ---------------- UI ---------------- */
   return (
     <div className="page-root">
       <div className="main-card">
@@ -273,20 +272,58 @@ export default function QuestionUploadPage() {
           {errors.description && <p className="error-text">{errors.description}</p>}
         </div>
 
+        {/* ⭐ PREDEFINED TOGGLE */}
+        <div className="form-group checkbox-row">
+          <input
+            type="checkbox"
+            checked={isPredefinedOnly}
+            onChange={e => setIsPredefinedOnly(e.target.checked)}
+          />
+          <label>Use predefined starter code</label>
+        </div>
+
+        {/* ⭐ PREDEFINED CODE INPUTS */}
+        {isPredefinedOnly && (
+          <div className="predefined-section">
+            <h4>Predefined Code</h4>
+            {predefinedCode.map(p => (
+              <div className="form-group" key={p.language}>
+                <label>{p.language.toUpperCase()}</label>
+                <textarea
+                  rows={6}
+                  value={p.code}
+                  placeholder="// WRITE YOUR CODE HERE"
+                  onChange={e => updatePredefined(p.language, e.target.value)}
+                />
+              </div>
+            ))}
+            {errors.predefinedCode && (
+              <p className="error-text">{errors.predefinedCode}</p>
+            )}
+          </div>
+        )}
+
         {/* SAMPLE TESTCASES */}
         <div className="section-title">Sample Testcases</div>
         {sampleTestcases.map((t, i) => (
           <div className="testcase-row" key={i}>
-            <textarea placeholder="Input" value={t.input}
-              onChange={e => update(sampleTestcases, setSampleTestcases, i, "input", e.target.value)} />
-            <textarea placeholder="Output" value={t.output}
-              onChange={e => update(sampleTestcases, setSampleTestcases, i, "output", e.target.value)} />
+            <textarea
+              placeholder="Input"
+              value={t.input}
+              onChange={e => update(sampleTestcases, setSampleTestcases, i, "input", e.target.value)}
+            />
+            <textarea
+              placeholder="Output"
+              value={t.output}
+              onChange={e => update(sampleTestcases, setSampleTestcases, i, "output", e.target.value)}
+            />
           </div>
         ))}
         {errors.sampleTestcases && <p className="error-text">{errors.sampleTestcases}</p>}
 
-        <button className="link-btn"
-          onClick={() => setSampleTestcases([...sampleTestcases, { input: "", output: "" }])}>
+        <button className="link-btn" onClick={() =>
+          setSampleTestcases([...sampleTestcases, { input: "", output: "" }])
+        }>
           Add Sample Testcase
         </button>
 
@@ -294,23 +331,32 @@ export default function QuestionUploadPage() {
         <div className="section-title">Hidden Testcases</div>
         {hiddenTestcases.map((t, i) => (
           <div className="testcase-row" key={i}>
-            <textarea placeholder="Input" value={t.input}
-              onChange={e => update(hiddenTestcases, setHiddenTestcases, i, "input", e.target.value)} />
-            <textarea placeholder="Output" value={t.output}
-              onChange={e => update(hiddenTestcases, setHiddenTestcases, i, "output", e.target.value)} />
+            <textarea
+              placeholder="Input"
+              value={t.input}
+              onChange={e => update(hiddenTestcases, setHiddenTestcases, i, "input", e.target.value)}
+            />
+            <textarea
+              placeholder="Output"
+              value={t.output}
+              onChange={e => update(hiddenTestcases, setHiddenTestcases, i, "output", e.target.value)}
+            />
           </div>
         ))}
         {errors.hiddenTestcases && <p className="error-text">{errors.hiddenTestcases}</p>}
 
-        <button className="link-btn"
-          onClick={() => setHiddenTestcases([...hiddenTestcases, { input: "", output: "" }])}>
+        <button className="link-btn" onClick={() =>
+          setHiddenTestcases([...hiddenTestcases, { input: "", output: "" }])
+        }>
           Add Hidden Testcase
         </button>
 
         {/* SUBMIT */}
         <div className="footer">
           <button className="primary-btn" onClick={submit} disabled={loading}>
-            {loading ? (questionId ? "Updating..." : "Publishing...") : (questionId ? "Update Question" : "Publish Question")}
+            {loading
+              ? (questionId ? "Updating..." : "Publishing...")
+              : (questionId ? "Update Question" : "Publish Question")}
           </button>
         </div>
       </div>
@@ -319,8 +365,8 @@ export default function QuestionUploadPage() {
       {showPopup && (
         <div className="popup-overlay">
           <div className="popup-card">
-            <h3>✅ Question {questionId ? 'Updated' : 'Created'}</h3>
-            <p>Your question has been {questionId ? 'updated' : 'published'} successfully.</p>
+            <h3>✅ Question {questionId ? "Updated" : "Created"}</h3>
+            <p>Your question has been successfully saved.</p>
             <button className="primary-btn" onClick={() => setShowPopup(false)}>
               OK
             </button>

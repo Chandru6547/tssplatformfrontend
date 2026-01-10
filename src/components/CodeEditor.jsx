@@ -1,8 +1,9 @@
 import Editor from "@monaco-editor/react";
 
 export default function CodeEditor({ language, code, setCode }) {
+  console.log(code);
   const handleEditorDidMount = (editor, monaco) => {
-
+    
     // Disable right-click context menu
     editor.updateOptions({
       contextmenu: false,
