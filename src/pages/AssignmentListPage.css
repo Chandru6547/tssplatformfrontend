@@ -1,0 +1,127 @@
+/* ---------- PAGE ---------- */
+.assignment-list-page {
+  padding: 32px;
+  max-width: 1200px;
+  margin: 0 auto; /* navbar-friendly */
+}
+
+/* ---------- HEADER ---------- */
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.page-header h2 {
+  font-size: 26px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+/* ---------- PRIMARY BUTTON ---------- */
+.primary-btn {
+  background: #2563eb;
+  color: #ffffff;
+  padding: 10px 18px;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease, box-shadow 0.2s ease;
+}
+
+.primary-btn:hover {
+  background: #1d4ed8;
+  box-shadow: 0 6px 14px rgba(37, 99, 235, 0.25);
+}
+
+/* ---------- TABLE CONTAINER ---------- */
+.assignment-table {
+  background: #ffffff;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  overflow: hidden;
+}
+
+/* ---------- TABLE HEADER & ROW ---------- */
+.table-header,
+.table-row {
+  display: grid;
+  grid-template-columns: 3fr 2fr 1fr 2fr;
+  padding: 14px 20px;
+  align-items: center;
+}
+
+/* ---------- HEADER ---------- */
+.table-header {
+  background: #f8fafc;
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 12px;
+  letter-spacing: 0.5px;
+  color: #475569;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+/* ---------- ROW ---------- */
+.table-row {
+  font-size: 14px;
+  color: #0f172a;
+  border-bottom: 1px solid #f1f5f9;
+  transition: background 0.15s ease;
+}
+
+.table-row:last-child {
+  border-bottom: none;
+}
+
+.table-row:hover {
+  background: #f8fafc;
+}
+
+/* ---------- NAME ---------- */
+.table-row .name {
+  font-weight: 600;
+}
+
+/* ---------- ACTIONS ---------- */
+.actions {
+  display: flex;
+  gap: 10px;
+}
+
+.actions button {
+  background: #f1f5f9;
+  border: 1px solid #e5e7eb;
+  color: #0f172a;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s ease, border 0.2s ease;
+}
+
+.actions button:hover {
+  background: #e2e8f0;
+  border-color: #cbd5f5;
+}
+
+/* ---------- EMPTY STATE ---------- */
+.empty-state {
+  text-align: center;
+  padding: 60px;
+  color: #64748b;
+  border: 1px dashed #cbd5f5;
+  border-radius: 12px;
+  background: #ffffff;
+}
+
+/* ---------- LOADER ---------- */
+.page-loader {
+  padding: 60px;
+  text-align: center;
+  font-size: 14px;
+  color: #64748b;
+}

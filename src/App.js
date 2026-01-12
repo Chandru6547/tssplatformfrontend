@@ -21,6 +21,11 @@ import ComingSoon from "./pages/ComingSoon";
 import MCQReportPage from "./pages/MCQReportPage";
 import CreateStudent from "./pages/CreateStudent";
 import AssignCourseOrMcq from "./pages/AssignCourseOrMcq";
+import CreateAssignmentPage from "./pages/CreateAssignmentPage";
+import AssignmentListPage from "./pages/AssignmentListPage";
+import AssignmentStudentPage from "./pages/AssignmentStudentPage";
+import AssignmentSolvePage from "./pages/AssignmentSolvePage";
+import AssignmentSolveQuestionPage from "./pages/AssignmentSolveQuestionPage";
 import "./App.css";
 
 export default function App() {
@@ -107,6 +112,24 @@ export default function App() {
               />
 
               <Route
+                path="/assignments/create"
+                element={
+                  <ProtectedRoute>
+                    <CreateAssignmentPage />
+                  </ProtectedRoute>
+                }
+              />
+
+              <Route
+                  path="/assignments/solve/:assignmentId/question/:questionId"
+                  element={
+                    <ProtectedRoute>
+                      <AssignmentSolveQuestionPage />
+                    </ProtectedRoute>
+                  }
+                />
+
+              <Route
                 path="/mcqs/test/:mcqId"
                 element={
                   <ProtectedRoute>
@@ -151,6 +174,31 @@ export default function App() {
                 <Route path="/create-student" element={<CreateStudent />} />
                 <Route path="/manage-curriculam" element={<AssignCourseOrMcq />} />
               <Route path="*" element={<Navigate to="/" />} />
+
+              <Route
+                path="/assignments/viewall"
+                element={
+                  <ProtectedRoute>
+                    <AssignmentListPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/assignment-student"
+                element={
+                  <ProtectedRoute>
+                    <AssignmentStudentPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+              path="/assignments/solve/:assignmentId"
+              element={
+                <ProtectedRoute>
+                  <AssignmentSolvePage />
+                </ProtectedRoute>
+              }
+            />
             </Routes>
           </main>
         </div>

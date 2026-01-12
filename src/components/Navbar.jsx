@@ -82,6 +82,10 @@ export default function Navbar() {
               <FaTrophy />
               <span>Contest</span>
             </Link>
+            <Link to="/assignment-student" className="nav-item">
+              <FaTrophy />
+              <span>Assignments</span>
+            </Link>
           </>
         )}
 
@@ -129,6 +133,20 @@ export default function Navbar() {
             >
               <FaChartLine />
               <span>Manage Curriculam</span>
+            </Link>
+            <Link
+              to="/assignments/create"
+              className={`nav-item ${isActive("/assignments/create")}`}
+            >
+              <FaChartLine />
+              <span>Create Assignments</span>
+            </Link>
+            <Link
+              to="/assignments/viewall"
+              className={`nav-item ${isActive("/assignments/viewall")}`}
+            >
+              <FaChartLine />
+              <span>View  Assignments</span>
             </Link>
           </>
         )}
