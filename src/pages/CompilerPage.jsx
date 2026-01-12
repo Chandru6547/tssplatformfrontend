@@ -41,7 +41,7 @@ export default function CompilerPage() {
         {/* EDITOR */}
         <div className="editor-card material-card">
           <div className="editor-header">
-            <h2>Online Compiler</h2>
+            <h2>IDE</h2>
 
             <div className="select-wrapper">
               <select

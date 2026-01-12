@@ -11,7 +11,10 @@ import {
   FaPlusSquare,
   FaUpload,
   FaChartLine,
-  FaSignOutAlt
+  FaSignOutAlt,
+  FaUserPlus,
+  FaSitemap,
+  FaUsers
 } from "react-icons/fa";
 
 import { logout, isAuthenticated, getRole } from "../utils/auth";
@@ -40,7 +43,7 @@ export default function Navbar() {
 
       {/* ---------- MENU ---------- */}
       <nav className="navbar-menu">
-        {/* Compiler */}
+        {/* IDE */}
         <Link to="/" className={`nav-item ${isActive("/")}`}>
           <FaCode />
           <span>IDE</span>
@@ -55,10 +58,7 @@ export default function Navbar() {
         {/* ================= STUDENT ================= */}
         {role === "student" && (
           <>
-            <Link
-              to="/mcqs/student"
-              className={`nav-item ${isActive("/mcqs")}`}
-            >
+            <Link to="/mcqs/student" className={`nav-item ${isActive("/mcqs")}`}>
               <FaQuestionCircle />
               <span>MCQs</span>
             </Link>
@@ -82,8 +82,12 @@ export default function Navbar() {
               <FaTrophy />
               <span>Contest</span>
             </Link>
-            <Link to="/assignment-student" className="nav-item">
-              <FaTrophy />
+
+            <Link
+              to="/assignment-student"
+              className={`nav-item ${isActive("/assignment-student")}`}
+            >
+              <FaTasks />
               <span>Assignments</span>
             </Link>
           </>
@@ -93,7 +97,7 @@ export default function Navbar() {
         {role === "admin" && (
           <>
             <Link to="/mcqs" className={`nav-item ${isActive("/mcqs")}`}>
-              <FaTasks />
+              <FaQuestionCircle />
               <span>MCQs</span>
             </Link>
 
@@ -120,33 +124,44 @@ export default function Navbar() {
               <FaChartLine />
               <span>Reports</span>
             </Link>
+
             <Link
               to="/create-student"
               className={`nav-item ${isActive("/create-student")}`}
             >
-              <FaChartLine />
+              <FaUserPlus />
               <span>Student Creation</span>
             </Link>
+
             <Link
               to="/manage-curriculam"
               className={`nav-item ${isActive("/manage-curriculam")}`}
             >
-              <FaChartLine />
-              <span>Manage Curriculam</span>
+              <FaSitemap />
+              <span>Manage Curriculum</span>
             </Link>
+
             <Link
               to="/assignments/create"
               className={`nav-item ${isActive("/assignments/create")}`}
             >
-              <FaChartLine />
+              <FaPlusSquare />
               <span>Create Assignments</span>
             </Link>
+
             <Link
               to="/assignments/viewall"
               className={`nav-item ${isActive("/assignments/viewall")}`}
             >
-              <FaChartLine />
-              <span>View  Assignments</span>
+              <FaTasks />
+              <span>View Assignments</span>
+            </Link>
+            <Link
+              to="/view-students-campus"
+              className={`nav-item ${isActive("/view-students-campus")}`}
+            >
+              <FaUsers />
+              <span>View Students</span>
             </Link>
           </>
         )}

@@ -210,6 +210,7 @@ export default function MCQTestPage() {
 
   /* ---------- SUBMIT TEST ---------- */
   const submitTest = async (forced = false) => {
+    
     if (submitting) return;
     setSubmitting(true);
 

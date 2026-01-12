@@ -26,6 +26,10 @@ import AssignmentListPage from "./pages/AssignmentListPage";
 import AssignmentStudentPage from "./pages/AssignmentStudentPage";
 import AssignmentSolvePage from "./pages/AssignmentSolvePage";
 import AssignmentSolveQuestionPage from "./pages/AssignmentSolveQuestionPage";
+import ViewStudentCampusListPage from "./pages/ViewStudentCampusListPage";
+import ViewStudentYearListPage from "./pages/ViewStudentYearListpage";
+import ViewStudentBatchListPage from "./pages/ViewStudentBatchListPage";
+import ViewStudentsByBatch from "./pages/ViewStudentsByBatch";
 import "./App.css";
 
 export default function App() {
@@ -196,6 +200,38 @@ export default function App() {
               element={
                 <ProtectedRoute>
                   <AssignmentSolvePage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/view-students-campus"
+              element={
+                <ProtectedRoute>
+                  <ViewStudentCampusListPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/view-students-year"
+              element={
+                <ProtectedRoute>
+                  <ViewStudentYearListPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/view-students-batches"
+              element={
+                <ProtectedRoute>
+                  <ViewStudentBatchListPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/view-students-batches-students"
+              element={
+                <ProtectedRoute>
+                  <ViewStudentsByBatch />
                 </ProtectedRoute>
               }
             />

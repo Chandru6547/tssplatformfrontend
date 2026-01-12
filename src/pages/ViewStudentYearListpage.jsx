@@ -43,7 +43,7 @@ export default function YearsListPage() {
     // ✅ store for refresh safety
     localStorage.setItem("selectedYear", year);
 
-    navigate("/batches", {
+    navigate("/view-students-batches", {
       state: {
         campus,
         year
