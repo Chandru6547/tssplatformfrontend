@@ -30,6 +30,8 @@ import ViewStudentCampusListPage from "./pages/ViewStudentCampusListPage";
 import ViewStudentYearListPage from "./pages/ViewStudentYearListpage";
 import ViewStudentBatchListPage from "./pages/ViewStudentBatchListPage";
 import ViewStudentsByBatch from "./pages/ViewStudentsByBatch";
+import StudentTickets from "./pages/StudentTickets";
+import AdminTickets from "./pages/AdminTickets";
 import "./App.css";
 
 export default function App() {
@@ -232,6 +234,22 @@ export default function App() {
               element={
                 <ProtectedRoute>
                   <ViewStudentsByBatch />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/raise-ticket"
+              element={
+                <ProtectedRoute>
+                  <StudentTickets />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/view-all-tickets"
+              element={
+                <ProtectedRoute>
+                  <AdminTickets />
                 </ProtectedRoute>
               }
             />

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getToken, logout, getUserId } from "../utils/auth";
+import { initAssignmentTimer } from "../utils/assignmentTimer";
 import "./AssignmentStudentPage.css";
 
 export default function AssignmentStudentPage() {
@@ -52,26 +53,27 @@ export default function AssignmentStudentPage() {
   /* ---------- CHECK COMPLETED ASSIGNMENTS ---------- */
   const checkCompletedAssignments = async (assignmentList) => {
     try {
-      const requests = assignmentList.map(a =>
+      const requests = assignmentList.map((a) =>
         fetch(
-          `${process.env.REACT_APP_API_BASE_URL}/assignment-submissions/assignment/${a._id}/student/${studentId}`,
+          `${process.env.REACT_APP_API_BASE_URL}/api/assignment-submissions/assignment/${a._id}/student/${studentId}`,
           {
             headers: {
               Authorization: `Bearer ${getToken()}`
             }
           }
         )
-          .then(res => res.ok ? res.json() : null)
-          .then(data => ({
+          .then((res) => (res.ok ? res.json() : null))
+          .then((data) => ({
             assignmentId: a._id,
-            completed: data && data.problemsSolved > 0
+            // ✅ ONLY disable if backend says completed
+            completed: data?.isCompleted === true
           }))
       );
 
       const results = await Promise.all(requests);
 
       const statusMap = {};
-      results.forEach(r => {
+      results.forEach((r) => {
         statusMap[r.assignmentId] = r.completed;
       });
 
@@ -85,25 +87,28 @@ export default function AssignmentStudentPage() {
     fetchAssignments();
   }, []);
 
+  /* ---------- START ASSIGNMENT ---------- */
+  const startAssignment = async (assignmentId) => {
+    try {
+      if (!document.fullscreenElement) {
+        await document.documentElement.requestFullscreen();
+      }
+    } catch (err) {
+      console.warn("Fullscreen denied", err);
+    }
+
+    // ✅ Start timer once
+    initAssignmentTimer(assignmentId);
+
+    // ✅ Navigate
+    navigate(`/assignments/solve/${assignmentId}`);
+  };
+
   /* ---------- LOADER ---------- */
   if (pageLoading) {
     return (
       <div className="course-loader">
-        <div className="human-loader">
-          <div className="head"></div>
-          <div className="body"></div>
-          <div className="arm left-arm"></div>
-          <div className="arm right-arm"></div>
-          <div className="leg left-leg"></div>
-          <div className="leg right-leg"></div>
-        </div>
-
-        <p className="loader-text">
-          Loading Assignments
-          <span className="dots">
-            <i>.</i><i>.</i><i>.</i>
-          </span>
-        </p>
+        <p>Loading Assignments...</p>
       </div>
     );
   }
@@ -124,7 +129,7 @@ export default function AssignmentStudentPage() {
         </div>
       ) : (
         <div className="course-grid">
-          {assignments.map(a => {
+          {assignments.map((a) => {
             const isCompleted = completedMap[a._id];
 
             return (
@@ -143,9 +148,7 @@ export default function AssignmentStudentPage() {
                 <button
                   className="course-btn"
                   disabled={isCompleted}
-                  onClick={() =>
-                    navigate(`/assignments/solve/${a._id}`)
-                  }
+                  onClick={() => startAssignment(a._id)}
                 >
                   {isCompleted ? "Completed ✓" : "Start Assignment →"}
                 </button>

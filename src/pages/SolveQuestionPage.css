@@ -344,3 +344,158 @@
   line-height: 1.5;
 }
 
+/* ================= MOBILE & TABLET RESPONSIVE ================= */
+
+/* ---------- TABLET (<= 1024px) ---------- */
+@media (max-width: 1024px) {
+  .solve-layout {
+    flex-direction: column;
+    height: auto;
+  }
+
+  .solve-left,
+  .solve-right {
+    width: 100%;
+    min-width: unset;
+  }
+
+  .solve-left {
+    border-right: none;
+    border-bottom: 1px solid #e5e7eb;
+  }
+
+  .question-panel {
+    padding: 24px;
+    max-height: none;
+  }
+
+  .solve-right {
+    height: 70vh;
+  }
+}
+
+/* ---------- MOBILE (<= 768px) ---------- */
+@media (max-width: 768px) {
+  .compiler-root {
+    background: #f8fafc;
+  }
+
+  /* Stack layout */
+  .solve-layout {
+    flex-direction: column;
+  }
+
+  /* QUESTION PANEL */
+  .question-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .question-header h1 {
+    font-size: 20px;
+  }
+
+  .difficulty {
+    font-size: 12px;
+    padding: 5px 12px;
+  }
+
+  .question-description {
+    font-size: 14px;
+  }
+
+  /* SAMPLE TESTCASES */
+  .sample-card {
+    padding: 12px;
+  }
+
+  .sample-row pre {
+    font-size: 12px;
+  }
+
+  /* EDITOR */
+  .solve-right {
+    height: 65vh;
+  }
+
+  .editor-top-bar {
+    padding: 10px;
+  }
+
+  .language-selector select {
+    width: 100%;
+    font-size: 13px;
+  }
+
+  /* ACTION BAR */
+  .action-bar {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .action-bar button {
+    width: 100%;
+    padding: 14px;
+    font-size: 14px;
+  }
+
+  /* RESULT SUMMARY */
+  .result-summary {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .summary-verdict {
+    font-size: 14px;
+  }
+
+  .summary-count {
+    font-size: 13px;
+  }
+
+  .summary-tag {
+    align-self: flex-start;
+  }
+}
+
+/* ---------- SMALL MOBILE (<= 480px) ---------- */
+@media (max-width: 480px) {
+  .question-panel {
+    padding: 18px;
+  }
+
+  .question-header h1 {
+    font-size: 18px;
+  }
+
+  .section-heading {
+    font-size: 15px;
+  }
+
+  .sample-title {
+    font-size: 14px;
+  }
+
+  /* TESTCASE DETAILS */
+  .tc-header {
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .tc-row pre {
+    font-size: 12px;
+  }
+
+  /* ERROR CARD */
+  .error-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+
+  .error-output {
+    font-size: 12px;
+  }
+}

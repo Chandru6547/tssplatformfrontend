@@ -15,9 +15,10 @@ export default function AssignCourseOrMcq() {
   const [batch, setBatch] = useState("");
 
   /* ---------- ASSIGN TYPE ---------- */
-  const [assignType, setAssignType] = useState(""); // course | mcq
+  const [assignType, setAssignType] = useState(""); // course | mcq | assignment
   const [courses, setCourses] = useState([]);
   const [mcqs, setMcqs] = useState([]);
+  const [assignments, setAssignments] = useState([]);
   const [selectedItem, setSelectedItem] = useState("");
 
   /* ---------- STUDENTS ---------- */
@@ -79,7 +80,7 @@ export default function AssignCourseOrMcq() {
       .catch(() => setStudents([]));
   }, [batch]);
 
-  /* ---------- FETCH COURSES / MCQS ---------- */
+  /* ---------- FETCH ITEMS BASED ON ASSIGN TYPE ---------- */
   useEffect(() => {
     setSelectedItem("");
 
@@ -100,12 +101,19 @@ export default function AssignCourseOrMcq() {
         .then(setMcqs)
         .catch(() => setMcqs([]));
     }
+
+    if (assignType === "assignment") {
+      fetch(`${API_BASE}/api/assignments`)
+        .then(res => res.json())
+        .then(setAssignments)
+        .catch(() => setAssignments([]));
+    }
   }, [assignType]);
 
   /* ---------- ASSIGN TO BATCH ---------- */
   const handleAssign = async () => {
-    if (!selectedItem) {
-      setMessage("❌ Please select a course or MCQ");
+    if (!assignType || !selectedItem) {
+      setMessage("❌ Please select assign type and item");
       return;
     }
 
@@ -117,21 +125,37 @@ export default function AssignCourseOrMcq() {
     setLoading(true);
     setMessage(`Assigning to ${students.length} students...`);
 
-    const endpoint = assignType === "course" ? "/addCourse" : "/addMcq";
+    let endpoint = "";
+    let payloadBuilder = null;
+
+    if (assignType === "course") {
+      endpoint = "/addCourse";
+      payloadBuilder = email => ({ email, course: selectedItem });
+    }
+
+    if (assignType === "mcq") {
+      endpoint = "/addMcq";
+      payloadBuilder = email => ({ email, mcq: selectedItem });
+    }
+
+    if (assignType === "assignment") {
+      endpoint = "/addAssignmentToUser";
+      payloadBuilder = email => ({
+        email,
+        assignmentId: selectedItem
+      });
+    }
 
     for (const student of students) {
-      const payload =
-        assignType === "course"
-          ? { email: student.email, course: selectedItem }
-          : { email: student.email, mcq: selectedItem };
-
       try {
         await fetch(`${API_BASE}${endpoint}`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload)
+          body: JSON.stringify(payloadBuilder(student.email))
         });
-      } catch {}
+      } catch (err) {
+        console.error("Assignment failed for", student.email);
+      }
     }
 
     setMessage("✅ Assigned successfully to entire batch");
@@ -140,7 +164,7 @@ export default function AssignCourseOrMcq() {
 
   return (
     <div className="student-container">
-      <h2>Assign Course / MCQ to Batch</h2>
+      <h2>Assign Course / MCQ / Assignment to Batch</h2>
 
       <div className="student-form">
         {/* COLLEGE */}
@@ -178,9 +202,10 @@ export default function AssignCourseOrMcq() {
           <option value="">Assign Type</option>
           <option value="course">Assign Course</option>
           <option value="mcq">Assign MCQ</option>
+          <option value="assignment">Assign Assignment</option>
         </select>
 
-        {/* COURSE SELECT */}
+        {/* COURSE */}
         {assignType === "course" && (
           <select value={selectedItem} onChange={e => setSelectedItem(e.target.value)}>
             <option value="">Select Course</option>
@@ -192,7 +217,7 @@ export default function AssignCourseOrMcq() {
           </select>
         )}
 
-        {/* MCQ SELECT */}
+        {/* MCQ */}
         {assignType === "mcq" && (
           <select value={selectedItem} onChange={e => setSelectedItem(e.target.value)}>
             <option value="">Select MCQ</option>
@@ -204,7 +229,18 @@ export default function AssignCourseOrMcq() {
           </select>
         )}
 
-        {/* SUBMIT */}
+        {/* ASSIGNMENT */}
+        {assignType === "assignment" && (
+          <select value={selectedItem} onChange={e => setSelectedItem(e.target.value)}>
+            <option value="">Select Assignment</option>
+            {assignments.map(a => (
+              <option key={a._id} value={a._id}>
+                {a.name}
+              </option>
+            ))}
+          </select>
+        )}
+
         <button disabled={loading} onClick={handleAssign}>
           {loading ? "Assigning..." : "Assign to Batch"}
         </button>
@@ -214,3 +250,4 @@ export default function AssignCourseOrMcq() {
     </div>
   );
 }
+  

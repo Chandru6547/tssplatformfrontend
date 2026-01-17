@@ -1,10 +1,9 @@
-/* FULL PAGE */
 .login-page {
   height: 100vh;
   display: flex;
   background: #ffffff;
+  overflow: hidden; /* 🔒 extra safety */
 }
-
 /* LEFT IMAGE */
 .login-left {
   flex: 1;

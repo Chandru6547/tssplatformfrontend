@@ -1,7 +1,8 @@
-export const login = (token, role, userId) => {
+export const login = (token, role, userId, email) => {
   localStorage.setItem("token", token);
   localStorage.setItem("role", role);
   localStorage.setItem("userId", userId);
+  localStorage.setItem("email", email);
 };
 
 export const logout = () => {
@@ -24,6 +25,10 @@ export const getRole = () => {
 
 export const getUserId = () => {
   return localStorage.getItem("userId");
+};
+
+export const getEmail = () => {
+  return localStorage.getItem("email");
 };
 
 export const getStudent = () => {

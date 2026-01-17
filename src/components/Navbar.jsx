@@ -90,6 +90,13 @@ export default function Navbar() {
               <FaTasks />
               <span>Assignments</span>
             </Link>
+            <Link
+              to="/raise-ticket"
+              className={`nav-item ${isActive("/raise-ticket")}`}
+            >
+              <FaTasks />
+              <span>Raise a Ticket</span>
+            </Link>
           </>
         )}
 
@@ -162,6 +169,13 @@ export default function Navbar() {
             >
               <FaUsers />
               <span>View Students</span>
+            </Link>
+             <Link
+              to="/view-all-tickets"
+              className={`nav-item ${isActive("/view-all-tickets")}`}
+            >
+              <FaUsers />
+              <span>View Tickets</span>
             </Link>
           </>
         )}

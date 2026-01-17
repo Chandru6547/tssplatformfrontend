@@ -36,7 +36,7 @@ export default function LoginPage() {
         return;
       }
 
-      login(data.token, data.role, data.userId);
+      login(data.token, data.role, data.userId, email);
       navigate("/");
       window.location.reload();
     } catch (err) {

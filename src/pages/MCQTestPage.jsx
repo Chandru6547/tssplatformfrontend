@@ -3,9 +3,20 @@ import { useParams, useNavigate } from "react-router-dom";
 import { getToken, logout, getUserId } from "../utils/auth";
 import "./MCQTestPage.css";
 
+/* ================= SHUFFLE UTILITY (ADDED) ================= */
+const shuffleArray = (array) => {
+  const arr = [...array];
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+};
+
 export default function MCQTestPage() {
   const { mcqId } = useParams();
   const navigate = useNavigate();
+  const userId = getUserId(); // ✅ already used elsewhere
 
   const [mcq, setMcq] = useState(null);
   const [index, setIndex] = useState(0);
@@ -24,7 +35,9 @@ export default function MCQTestPage() {
   const tabSwitchCountRef = useRef(0);
   const [showTabWarning, setShowTabWarning] = useState(false);
 
-  const STORAGE_KEY = `mcq_${mcqId}_answers`;
+  /* ================= STORAGE KEYS (UPDATED) ================= */
+  const STORAGE_KEY = `mcq_${mcqId}_${userId}_answers`;
+  const ORDER_KEY = `mcq_${mcqId}_${userId}_order`;
 
   /* ---------- FULLSCREEN ---------- */
   const enterFullscreen = async () => {
@@ -39,7 +52,7 @@ export default function MCQTestPage() {
     }
   };
 
-  /* ---------- CAMERA + MIC (BLACK SCREEN FIXED) ---------- */
+  /* ---------- CAMERA + MIC ---------- */
   const startCameraMic = async () => {
     if (cameraStartedRef.current) return;
 
@@ -59,7 +72,6 @@ export default function MCQTestPage() {
       const video = videoRef.current;
       if (!video) return;
 
-      // HARD RESET (fixes black screen)
       video.pause();
       video.srcObject = null;
 
@@ -68,9 +80,7 @@ export default function MCQTestPage() {
       video.playsInline = true;
       video.autoplay = true;
 
-      // Force reflow
       video.style.display = "none";
-      // video.offsetHeight;
       video.style.display = "block";
 
       await new Promise(resolve => {
@@ -79,7 +89,6 @@ export default function MCQTestPage() {
 
       await video.play();
 
-      // Auto submit if camera/mic stops
       stream.getTracks().forEach(track => {
         track.onended = () => {
           if (!showResult) submitTest(true);
@@ -87,7 +96,6 @@ export default function MCQTestPage() {
       });
     } catch (err) {
       alert("Camera & microphone permission is mandatory");
-      console.error(err);
       throw err;
     }
   };
@@ -98,7 +106,7 @@ export default function MCQTestPage() {
     cameraStartedRef.current = false;
   };
 
-  /* ---------- FETCH MCQ ---------- */
+  /* ================= FETCH MCQ + SHUFFLE (UPDATED) ================= */
   useEffect(() => {
     const fetchMCQ = async () => {
       const res = await fetch(
@@ -113,8 +121,27 @@ export default function MCQTestPage() {
       }
 
       const data = await res.json();
-      setMcq(data);
 
+      /* ---------- SHUFFLE QUESTIONS PER USER ---------- */
+      const savedOrder = localStorage.getItem(ORDER_KEY);
+      let finalQuestions;
+
+      if (savedOrder) {
+        const order = JSON.parse(savedOrder);
+        finalQuestions = order
+          .map(id => data.questions.find(q => q._id === id))
+          .filter(Boolean);
+      } else {
+        finalQuestions = shuffleArray(data.questions);
+        localStorage.setItem(
+          ORDER_KEY,
+          JSON.stringify(finalQuestions.map(q => q._id))
+        );
+      }
+
+      setMcq({ ...data, questions: finalQuestions });
+
+      /* ---------- RESTORE ANSWERS ---------- */
       const saved = localStorage.getItem(STORAGE_KEY);
       if (saved) setAnswers(JSON.parse(saved));
     };
@@ -169,8 +196,8 @@ export default function MCQTestPage() {
   /* ---------- START TEST ---------- */
   const startTest = async () => {
     try {
-      await startCameraMic();   // FIRST camera
-      await enterFullscreen();  // THEN fullscreen
+      await startCameraMic();
+      await enterFullscreen();
       setStarted(true);
     } catch {
       exitFullscreenSafely();
@@ -210,7 +237,6 @@ export default function MCQTestPage() {
 
   /* ---------- SUBMIT TEST ---------- */
   const submitTest = async (forced = false) => {
-    
     if (submitting) return;
     setSubmitting(true);
 
@@ -230,7 +256,7 @@ export default function MCQTestPage() {
           },
           body: JSON.stringify({
             mcqId,
-            studentId: getUserId(),
+            studentId: userId,
             answers: payload,
             forcedSubmit: forced
           })
@@ -240,7 +266,10 @@ export default function MCQTestPage() {
       const data = await res.json();
       setScore(data?.submission?.score ?? data?.score ?? 0);
       setShowResult(true);
+
+      /* ---------- CLEANUP (ADDED) ---------- */
       localStorage.removeItem(STORAGE_KEY);
+      localStorage.removeItem(ORDER_KEY);
     } finally {
       stopCameraMic();
       exitFullscreenSafely();
@@ -249,7 +278,6 @@ export default function MCQTestPage() {
 
   return (
     <>
-      {/* CAMERA PREVIEW */}
       <video
         ref={videoRef}
         className="camera-preview"
@@ -299,7 +327,6 @@ export default function MCQTestPage() {
         </div>
       </div>
 
-      {/* TAB WARNING */}
       {showTabWarning && (
         <div className="modal-overlay">
           <div className="result-modal">
@@ -312,7 +339,6 @@ export default function MCQTestPage() {
         </div>
       )}
 
-      {/* RESULT */}
       {showResult && (
         <div className="modal-overlay">
           <div className="result-modal">
@@ -329,3 +355,4 @@ export default function MCQTestPage() {
     </>
   );
 }
+  

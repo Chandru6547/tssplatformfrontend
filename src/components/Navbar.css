@@ -87,3 +87,22 @@
   background: #7f1d1d;
   color: white;
 }
+
+/* SECTION GROUPING */
+.nav-section {
+  margin-bottom: 18px;
+}
+
+.nav-section-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: #64748b;
+  padding: 6px 16px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* OPTIONAL: spacing improvement */
+.navbar-menu {
+  padding-top: 10px;
+}

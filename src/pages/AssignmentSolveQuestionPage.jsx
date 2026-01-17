@@ -1,6 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import CodeEditor from "../components/CodeEditor";
+import AssignmentTimer from "./AssignmentTimer";
 import { getToken, logout, getUserId } from "../utils/auth";
 import "./AssignmentSolveQuestionPage.css";
 
@@ -14,23 +15,24 @@ export default function AssignmentSolveQuestionPage() {
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  /* ---------- FULLSCREEN ---------- */
+  const autoSubmittedRef = useRef(false); // 🔐 prevents multiple submits
+
+  /* ---------- MARK QUESTION COMPLETED ---------- */
+  const markQuestionCompleted = () => {
+    const key = `assignment_completed_questions_${assignmentId}`;
+    const completed = JSON.parse(localStorage.getItem(key)) || [];
+
+    if (!completed.includes(questionId)) {
+      completed.push(questionId);
+      localStorage.setItem(key, JSON.stringify(completed));
+    }
+  };
+
+  /* ---------- FULLSCREEN ENFORCEMENT ---------- */
   useEffect(() => {
-    const enterFullscreen = async () => {
-      try {
-        if (!document.fullscreenElement) {
-          await document.documentElement.requestFullscreen();
-        }
-      } catch {}
-    };
-
-    enterFullscreen();
-
-    return () => {
-      if (document.fullscreenElement) {
-        document.exitFullscreen().catch(() => {});
-      }
-    };
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen().catch(() => {});
+    }
   }, []);
 
   /* ---------- FETCH QUESTION ---------- */
@@ -40,7 +42,9 @@ export default function AssignmentSolveQuestionPage() {
         const res = await fetch(
           `${process.env.REACT_APP_API_BASE_URL}/questions/${questionId}`,
           {
-            headers: { Authorization: `Bearer ${getToken()}` }
+            headers: {
+              Authorization: `Bearer ${getToken()}`
+            }
           }
         );
 
@@ -50,22 +54,33 @@ export default function AssignmentSolveQuestionPage() {
           return;
         }
 
-        setQuestion(await res.json());
-      } catch (err) {
-        console.error("Failed to load question", err);
+        const data = await res.json();
+        setQuestion(data);
+      } catch {
+        console.error("Failed to load question");
       }
     }
 
     fetchQuestion();
   }, [questionId, navigate]);
 
-  /* ---------- RUN SAMPLE ---------- */
+  /* ---------- AUTO SUBMIT ON LOAD ---------- */
+  useEffect(() => {
+    if (!question) return;
+    if (!code.trim()) return;
+    if (autoSubmittedRef.current) return;
+
+    autoSubmittedRef.current = true;
+    submitAssignment(true);
+  }, [question, code]);
+
+  /* ---------- RUN ---------- */
   const runSample = async () => {
     setLoading(true);
     setResult(null);
 
     try {
-      const res = await fetch(`${process.env.REACT_APP_API_BASE_URL}/run`, {
+      const res = await fetch("https://tssplatform.onrender.com/run", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -86,13 +101,13 @@ export default function AssignmentSolveQuestionPage() {
     }
   };
 
-  /* ---------- SUBMIT ASSIGNMENT ---------- */
-  const submitAssignment = async () => {
+  /* ---------- SUBMIT ---------- */
+  const submitAssignment = async (isAuto = false) => {
     setLoading(true);
     setResult(null);
 
     try {
-      const res = await fetch(`${process.env.REACT_APP_API_BASE_URL}/run`, {
+      const res = await fetch("https://tssplatform.onrender.com/run", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -110,10 +125,8 @@ export default function AssignmentSolveQuestionPage() {
       const data = await res.json();
       setResult(data);
 
-      if (data.verdict === "AC") {
-        setTimeout(() => {
-          navigate(`/assignments/solve/${assignmentId}`);
-        }, 1500);
+      if (data.passed === data.total) {
+        markQuestionCompleted();
       }
     } catch {
       setResult({ error: "Submission failed" });
@@ -126,16 +139,20 @@ export default function AssignmentSolveQuestionPage() {
     return <div className="assignment-loader">Loading question...</div>;
   }
 
-  return (
-    <div className="compiler-root">
-      <div className="solve-layout">
+  const failedCount =
+    result && !result.results ? result.total - result.passed : 0;
 
+  return (
+    <div className="assignment-root">
+      <div className="assignment-layout">
         {/* LEFT */}
-        <div className="solve-left">
-          <div className="question-panel">
+        <div className="assignment-left">
+          <div className="question-card">
             <div className="question-header">
               <h1>{question.title}</h1>
-              <span className={`difficulty ${question.difficulty?.toLowerCase()}`}>
+              <span
+                className={`difficulty ${question.difficulty?.toLowerCase()}`}
+              >
                 {question.difficulty}
               </span>
             </div>
@@ -145,67 +162,118 @@ export default function AssignmentSolveQuestionPage() {
               dangerouslySetInnerHTML={{ __html: question.description }}
             />
 
-            <h3 className="section-heading">Sample Testcases</h3>
+            <h3 className="section-title">Sample Testcases</h3>
 
-            <div className="sample-list">
-              {question.sampleTestcases.map((tc, i) => (
-                <div key={i} className="sample-card">
-                  <strong>Input</strong>
-                  <pre>{tc.input}</pre>
-                  <strong>Output</strong>
-                  <pre>{tc.output}</pre>
-                </div>
-              ))}
-            </div>
+            {question.sampleTestcases.map((tc, i) => (
+              <div key={i} className="sample-box">
+                <strong>Input</strong>
+                <pre>{tc.input}</pre>
+                <strong>Output</strong>
+                <pre>{tc.output}</pre>
+              </div>
+            ))}
           </div>
         </div>
 
         {/* RIGHT */}
-        <div className="solve-right">
-          <div className="editor-shell">
-            <div className="editor-top-bar">
-              <select
-                value={language}
-                onChange={(e) => setLanguage(e.target.value)}
-              >
-                <option value="python">Python</option>
-                <option value="c">C</option>
-                <option value="cpp">C++</option>
-                <option value="java">Java</option>
-              </select>
-            </div>
+        <div className="assignment-right">
+          <div className="editor-header">
+            {/* 🔙 GO BACK BUTTON */}
+            <button
+              className="btn ghost"
+              onClick={() => navigate(-1)}
+            >
+              ← Go Back
+            </button>
 
+            <AssignmentTimer
+              assignmentId={assignmentId}
+              onTimeUp={() =>
+                navigate(`/assignments/solve/${assignmentId}`)
+              }
+            />
+
+            <select
+              value={language}
+              onChange={(e) => setLanguage(e.target.value)}
+            >
+              <option value="python">Python</option>
+              <option value="c">C</option>
+              <option value="cpp">C++</option>
+              <option value="java">Java</option>
+            </select>
+          </div>
+
+          <div className="editor-wrapper">
             <CodeEditor language={language} code={code} setCode={setCode} />
+          </div>
 
-            <div className="action-bar">
-              <button onClick={runSample} disabled={loading}>
-                ▶ Run
-              </button>
-              <button
-                className="submit"
-                onClick={submitAssignment}
-                disabled={loading}
-              >
-                🚀 Submit
-              </button>
-            </div>
+          <div className="editor-actions">
+            <button
+              className="btn ghost"
+              onClick={runSample}
+              disabled={loading}
+            >
+              ▶ Run
+            </button>
+            <button
+              className="btn primary"
+              onClick={() => submitAssignment(false)}
+              disabled={loading}
+            >
+              🚀 Submit
+            </button>
           </div>
         </div>
       </div>
 
-      {/* RESULT */}
+      {/* ---------- RESULT ---------- */}
       {result && (
-        <div className="result-panel">
-          <span
-            className={`summary-verdict ${
-              result.verdict === "AC" ? "ok" : "fail"
-            }`}
-          >
-            {result.verdict === "AC" ? "✔ Accepted" : "✖ Wrong Answer"}
-          </span>
-          <span className="summary-count">
-            {result.passed} / {result.total} testcases passed
-          </span>
+        <div className="result-container">
+          {result.results ? (
+            <>
+              <h3 className="result-title">Run Results</h3>
+              <table className="result-table">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Input</th>
+                    <th>Expected</th>
+                    <th>Your Output</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {result.results.map((tc, i) => (
+                    <tr key={i}>
+                      <td>{i + 1}</td>
+                      <td><pre>{tc.input}</pre></td>
+                      <td><pre>{tc.expected}</pre></td>
+                      <td><pre>{tc.actual}</pre></td>
+                      <td>
+                        <span
+                          className={`status ${
+                            tc.status === "AC" ? "ok" : "fail"
+                          }`}
+                        >
+                          {tc.status}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </>
+          ) : (
+            <div className="submit-summary-text">
+              <span className="passed">
+                ✅ Passed: <strong>{result.passed}/{result.total}</strong>
+              </span>
+              <span className="failed">
+                ❌ Failed: <strong>{failedCount}/{result.total}</strong>
+              </span>
+            </div>
+          )}
         </div>
       )}
     </div>
