@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getToken, logout, getUserId } from "../utils/auth";
 import "./MCQStudentPage.css";
@@ -12,7 +12,7 @@ export default function MCQStudentPage() {
   const studentId = getUserId();
 
   /* ---------- FETCH MCQS ---------- */
-  const fetchMCQs = async () => {
+  const fetchMCQs = useCallback(async () => {
     setPageLoading(true);
     const startTime = Date.now();
 
@@ -47,7 +47,7 @@ export default function MCQStudentPage() {
       const elapsed = Date.now() - startTime;
       setTimeout(() => setPageLoading(false), Math.max(3000 - elapsed, 0));
     }
-  };
+  }, [studentId, navigate]);
 
   /* ---------- CHECK COMPLETED MCQS ---------- */
   const checkCompletedMCQs = async (mcqList) => {
@@ -83,7 +83,7 @@ export default function MCQStudentPage() {
 
   useEffect(() => {
     fetchMCQs();
-  }, []);
+  }, [fetchMCQs]);
 
   /* ---------- LOADER ---------- */
   if (pageLoading) {

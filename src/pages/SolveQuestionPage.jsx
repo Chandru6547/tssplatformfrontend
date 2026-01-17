@@ -59,7 +59,7 @@ export default function SolveQuestionPage() {
       const starterCode = getPredefinedCodeForLanguage(question, language);
       setCode(starterCode);
     }
-  }, [question]);
+  }, [question, language]);
 
   /* ========== SWITCH PREDEFINED CODE ON LANGUAGE CHANGE (ADDED) ========== */
   useEffect(() => {
@@ -69,7 +69,7 @@ export default function SolveQuestionPage() {
       const starterCode = getPredefinedCodeForLanguage(question, language);
       setCode(starterCode);
     }
-  }, [language]);
+  }, [question, language]);
 
   /* ---------------- RUN SAMPLE ---------------- */
   const runSample = async () => {

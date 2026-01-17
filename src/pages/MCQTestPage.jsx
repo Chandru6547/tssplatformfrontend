@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { getToken, logout, getUserId } from "../utils/auth";
 import "./MCQTestPage.css";
@@ -36,8 +36,8 @@ export default function MCQTestPage() {
   const [showTabWarning, setShowTabWarning] = useState(false);
 
   /* ================= STORAGE KEYS (UPDATED) ================= */
-  const STORAGE_KEY = `mcq_${mcqId}_${userId}_answers`;
-  const ORDER_KEY = `mcq_${mcqId}_${userId}_order`;
+  const STORAGE_KEY = useRef(`mcq_${mcqId}_${userId}_answers`).current;
+  const ORDER_KEY = useRef(`mcq_${mcqId}_${userId}_order`).current;
 
   /* ---------- FULLSCREEN ---------- */
   const enterFullscreen = async () => {
@@ -106,6 +106,47 @@ export default function MCQTestPage() {
     cameraStartedRef.current = false;
   };
 
+  /* ---------- SUBMIT TEST ---------- */
+  const submitTest = useCallback(async (forced = false) => {
+    if (submitting) return;
+    setSubmitting(true);
+
+    try {
+      const payload = mcq.questions.map(q => ({
+        questionId: q._id,
+        selectedOption: answers[q._id] || null
+      }));
+
+      const res = await fetch(
+        `${process.env.REACT_APP_API_BASE_URL}/api/mcq-submissions/submit`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${getToken()}`
+          },
+          body: JSON.stringify({
+            mcqId,
+            studentId: userId,
+            answers: payload,
+            forcedSubmit: forced
+          })
+        }
+      );
+
+      const data = await res.json();
+      setScore(data?.submission?.score ?? data?.score ?? 0);
+      setShowResult(true);
+
+      /* ---------- CLEANUP (ADDED) ---------- */
+      localStorage.removeItem(STORAGE_KEY);
+      localStorage.removeItem(ORDER_KEY);
+    } finally {
+      stopCameraMic();
+      exitFullscreenSafely();
+    }
+  }, [mcqId, userId, answers, mcq, submitting, STORAGE_KEY, ORDER_KEY]);
+
   /* ================= FETCH MCQ + SHUFFLE (UPDATED) ================= */
   useEffect(() => {
     const fetchMCQ = async () => {
@@ -160,7 +201,7 @@ export default function MCQTestPage() {
     document.addEventListener("fullscreenchange", handleExit);
     return () =>
       document.removeEventListener("fullscreenchange", handleExit);
-  }, [started, showResult]);
+  }, [started, showResult, submitTest]);
 
   /* ---------- TAB SWITCH DETECTION ---------- */
   useEffect(() => {
@@ -191,7 +232,7 @@ export default function MCQTestPage() {
       document.removeEventListener("visibilitychange", onVisibilityChange);
       window.removeEventListener("blur", onBlur);
     };
-  }, [started, showResult]);
+  }, [started, showResult, submitTest]);
 
   /* ---------- START TEST ---------- */
   const startTest = async () => {
@@ -235,46 +276,7 @@ export default function MCQTestPage() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
   };
 
-  /* ---------- SUBMIT TEST ---------- */
-  const submitTest = async (forced = false) => {
-    if (submitting) return;
-    setSubmitting(true);
 
-    try {
-      const payload = mcq.questions.map(q => ({
-        questionId: q._id,
-        selectedOption: answers[q._id] || null
-      }));
-
-      const res = await fetch(
-        `${process.env.REACT_APP_API_BASE_URL}/api/mcq-submissions/submit`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${getToken()}`
-          },
-          body: JSON.stringify({
-            mcqId,
-            studentId: userId,
-            answers: payload,
-            forcedSubmit: forced
-          })
-        }
-      );
-
-      const data = await res.json();
-      setScore(data?.submission?.score ?? data?.score ?? 0);
-      setShowResult(true);
-
-      /* ---------- CLEANUP (ADDED) ---------- */
-      localStorage.removeItem(STORAGE_KEY);
-      localStorage.removeItem(ORDER_KEY);
-    } finally {
-      stopCameraMic();
-      exitFullscreenSafely();
-    }
-  };
 
   return (
     <>

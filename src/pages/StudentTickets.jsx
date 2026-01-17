@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import React from "react";
 import { getEmail } from "../utils/auth";
 import "./StudentTickets.css";
@@ -56,7 +56,7 @@ export default function StudentTickets() {
   };
 
   /* LOAD MY TICKETS */
-  const loadMyTickets = async () => {
+  const loadMyTickets = useCallback(async () => {
     const res = await fetch(`${BASE_URL}/my`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -65,7 +65,7 @@ export default function StudentTickets() {
 
     const data = await res.json();
     setTickets(data);
-  };
+  }, [email]);
 
   useEffect(() => {
     if (email) loadMyTickets();
@@ -75,7 +75,7 @@ export default function StudentTickets() {
     };
     window.addEventListener("keydown", handleEscape);
     return () => window.removeEventListener("keydown", handleEscape);
-  }, [email]);
+  }, [email, loadMyTickets]);
 
   let filteredTickets = tickets.filter(t =>
     t.issue.toLowerCase().includes(search.toLowerCase()) ||
