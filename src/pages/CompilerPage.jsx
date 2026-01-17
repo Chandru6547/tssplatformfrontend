@@ -5,6 +5,8 @@ import "./CompilerPage.css";
 export default function CompilerPage() {
   const [language, setLanguage] = useState("python");
   const [code, setCode] = useState("");
+  const [needsInput, setNeedsInput] = useState(true);
+
   const [testcases, setTestcases] = useState([{ input: "", output: "" }]);
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -13,18 +15,28 @@ export default function CompilerPage() {
     setLoading(true);
     setResult(null);
 
+    const endpoint = needsInput ? "/run" : "/run-code-alone";
+
+    const payload = needsInput
+      ? { language, code, testcases }
+      : { language, code };
+
     try {
-      const res = await fetch(`${process.env.REACT_APP_API_BASE_URL}/run`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ language, code, testcases })
-      });
+      const res = await fetch(
+        `${process.env.REACT_APP_API_BASE_URL}${endpoint}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        }
+      );
 
       const data = await res.json();
       setResult(data);
     } catch {
       setResult({ error: "⚠️ Server not reachable" });
     }
+
     setLoading(false);
   };
 
@@ -38,22 +50,38 @@ export default function CompilerPage() {
     <div className="compiler-root">
       <div className="compiler-container">
 
-        {/* EDITOR */}
+        {/* ================= EDITOR ================= */}
         <div className="editor-card material-card">
           <div className="editor-header">
-            <h2>IDE</h2>
+            <h2>Online Compiler</h2>
 
-            <div className="select-wrapper">
-              <select
-                value={language}
-                onChange={(e) => setLanguage(e.target.value)}
-              >
-                <option value="python">Python</option>
-                <option value="c">C</option>
-                <option value="cpp">C++</option>
-                <option value="java">Java</option>
-              </select>
-              <span className="select-arrow">▼</span>
+            <div className="editor-controls">
+              {/* LANGUAGE */}
+              <div className="select-wrapper">
+                <select
+                  value={language}
+                  onChange={(e) => setLanguage(e.target.value)}
+                >
+                  <option value="python">Python</option>
+                  <option value="c">C</option>
+                  <option value="cpp">C++</option>
+                  <option value="java">Java</option>
+                </select>
+                <span className="select-arrow">▼</span>
+              </div>
+
+              {/* INPUT TOGGLE */}
+              <div className="toggle-wrapper">
+                <span>Needs Input</span>
+                <label className="switch">
+                  <input
+                    type="checkbox"
+                    checked={needsInput}
+                    onChange={() => setNeedsInput(!needsInput)}
+                  />
+                  <span className="slider"></span>
+                </label>
+              </div>
             </div>
           </div>
 
@@ -75,7 +103,7 @@ export default function CompilerPage() {
           </button>
         </div>
 
-        {/* SUMMARY RESULT */}
+        {/* ================= RESULT SUMMARY ================= */}
         {result && (
           <div className="result-card material-card">
             {result.error && (
@@ -97,91 +125,91 @@ export default function CompilerPage() {
                 </div>
               </>
             )}
+
+            {/* CODE ALONE OUTPUT */}
+            {!needsInput && result.output && (
+              <div className="code-output">
+                <h4>Output</h4>
+                <pre>{result.output}</pre>
+              </div>
+            )}
           </div>
         )}
 
-        {/* DETAILED TESTCASE RESULTS */}
-        {result?.results && (
+        {/* ================= TESTCASE RESULTS ================= */}
+        {needsInput && result?.results && (
           <div className="testcase-section material-card">
             <h3>Testcase Results</h3>
 
+            <table className="result-table">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Input</th>
+                  <th>Expected</th>
+                  <th>Actual</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {result.results.map((tc, i) => (
+                  <tr key={i} className={tc.status === "PASS" ? "row-pass" : "row-fail"}>
+                    <td>{i + 1}</td>
+                    <td><pre>{tc.input || "—"}</pre></td>
+                    <td><pre>{tc.expected || "—"}</pre></td>
+                    <td><pre>{tc.actual || tc.error || "—"}</pre></td>
+                    <td>
+                      <span className={`status ${tc.status === "PASS" ? "pass" : "fail"}`}>
+                        {tc.status}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+
+        {/* ================= TESTCASE INPUT ================= */}
+        {needsInput && (
+          <div className="testcase-section material-card">
+            <div className="testcase-header">
+              <h3>Test Cases</h3>
+              <button
+                className="add-btn"
+                onClick={() =>
+                  setTestcases([...testcases, { input: "", output: "" }])
+                }
+              >
+                + Add
+              </button>
+            </div>
+
             <div className="testcase-grid">
-              {result.results.map((tc, i) => (
-                <div
-                  key={i}
-                  className={`testcase-card ${
-                    tc.status === "PASS" ? "tc-pass" : "tc-fail"
-                  }`}
-                >
-                  <div className="testcase-title">
-                    Testcase {tc.testcase}
-                    <span
-                      className={`tc-status ${
-                        tc.status === "PASS" ? "pass" : "fail"
-                      }`}
-                    >
-                      {tc.status}
-                    </span>
-                  </div>
+              {testcases.map((tc, i) => (
+                <div className="testcase-card" key={i}>
+                  <div className="testcase-title">Testcase {i + 1}</div>
 
-                  <div className="tc-block">
-                    <label>Input</label>
-                    <pre>{tc.input || "—"}</pre>
-                  </div>
+                  <textarea
+                    placeholder="Input"
+                    value={tc.input}
+                    onChange={(e) =>
+                      updateTestcase(i, "input", e.target.value)
+                    }
+                  />
 
-                  <div className="tc-block">
-                    <label>Expected Output</label>
-                    <pre>{tc.expected || "—"}</pre>
-                  </div>
-
-                  <div className="tc-block">
-                    <label>Actual Output</label>
-                    <pre>{tc.actual || tc.error || "—"}</pre>
-                  </div>
+                  <textarea
+                    placeholder="Expected Output"
+                    value={tc.output}
+                    onChange={(e) =>
+                      updateTestcase(i, "output", e.target.value)
+                    }
+                  />
                 </div>
               ))}
             </div>
           </div>
         )}
-
-        {/* TESTCASE INPUT CREATION */}
-        <div className="testcase-section material-card">
-          <div className="testcase-header">
-            <h3>Test Cases (Input)</h3>
-            <button
-              className="add-btn"
-              onClick={() =>
-                setTestcases([...testcases, { input: "", output: "" }])
-              }
-            >
-              + Add
-            </button>
-          </div>
-
-          <div className="testcase-grid">
-            {testcases.map((tc, i) => (
-              <div className="testcase-card" key={i}>
-                <div className="testcase-title">Testcase {i + 1}</div>
-
-                <textarea
-                  placeholder="Input"
-                  value={tc.input}
-                  onChange={(e) =>
-                    updateTestcase(i, "input", e.target.value)
-                  }
-                />
-
-                <textarea
-                  placeholder="Expected Output"
-                  value={tc.output}
-                  onChange={(e) =>
-                    updateTestcase(i, "output", e.target.value)
-                  }
-                />
-              </div>
-            ))}
-          </div>
-        </div>
 
       </div>
     </div>
