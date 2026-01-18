@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getToken, logout, getUserId } from "../utils/auth";
 import { initAssignmentTimer } from "../utils/assignmentTimer";
@@ -12,8 +12,41 @@ export default function AssignmentStudentPage() {
   const navigate = useNavigate();
   const studentId = getUserId();
 
+  /* ---------- CHECK COMPLETED ASSIGNMENTS ---------- */
+  const checkCompletedAssignments = useCallback(async (assignmentList) => {
+    try {
+      const requests = assignmentList.map((a) =>
+        fetch(
+          `${process.env.REACT_APP_API_BASE_URL}/api/assignment-submissions/assignment/${a._id}/student/${studentId}`,
+          {
+            headers: {
+              Authorization: `Bearer ${getToken()}`
+            }
+          }
+        )
+          .then((res) => (res.ok ? res.json() : null))
+          .then((data) => ({
+            assignmentId: a._id,
+            // ✅ ONLY disable if backend says completed
+            completed: data?.isCompleted === true
+          }))
+      );
+
+      const results = await Promise.all(requests);
+
+      const statusMap = {};
+      results.forEach((r) => {
+        statusMap[r.assignmentId] = r.completed;
+      });
+
+      setCompletedMap(statusMap);
+    } catch (err) {
+      console.error("Failed to check assignment completion", err);
+    }
+  }, [studentId]);
+
   /* ---------- FETCH ASSIGNMENTS ---------- */
-  const fetchAssignments = async () => {
+  const fetchAssignments = useCallback(async () => {
     setPageLoading(true);
     const startTime = Date.now();
 
@@ -48,44 +81,11 @@ export default function AssignmentStudentPage() {
       const elapsed = Date.now() - startTime;
       setTimeout(() => setPageLoading(false), Math.max(3000 - elapsed, 0));
     }
-  };
-
-  /* ---------- CHECK COMPLETED ASSIGNMENTS ---------- */
-  const checkCompletedAssignments = async (assignmentList) => {
-    try {
-      const requests = assignmentList.map((a) =>
-        fetch(
-          `${process.env.REACT_APP_API_BASE_URL}/api/assignment-submissions/assignment/${a._id}/student/${studentId}`,
-          {
-            headers: {
-              Authorization: `Bearer ${getToken()}`
-            }
-          }
-        )
-          .then((res) => (res.ok ? res.json() : null))
-          .then((data) => ({
-            assignmentId: a._id,
-            // ✅ ONLY disable if backend says completed
-            completed: data?.isCompleted === true
-          }))
-      );
-
-      const results = await Promise.all(requests);
-
-      const statusMap = {};
-      results.forEach((r) => {
-        statusMap[r.assignmentId] = r.completed;
-      });
-
-      setCompletedMap(statusMap);
-    } catch (err) {
-      console.error("Failed to check assignment completion", err);
-    }
-  };
+  }, [studentId, navigate, checkCompletedAssignments]);
 
   useEffect(() => {
     fetchAssignments();
-  }, []);
+  }, [fetchAssignments]);
 
   /* ---------- START ASSIGNMENT ---------- */
   const startAssignment = async (assignmentId) => {

@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from "react";
+import { useCallback, useEffect, useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import CodeEditor from "../components/CodeEditor";
 import AssignmentTimer from "./AssignmentTimer";
@@ -18,7 +18,7 @@ export default function AssignmentSolveQuestionPage() {
   const autoSubmittedRef = useRef(false); // 🔐 prevents multiple submits
 
   /* ---------- MARK QUESTION COMPLETED ---------- */
-  const markQuestionCompleted = () => {
+  const markQuestionCompleted = useCallback(() => {
     const key = `assignment_completed_questions_${assignmentId}`;
     const completed = JSON.parse(localStorage.getItem(key)) || [];
 
@@ -26,7 +26,7 @@ export default function AssignmentSolveQuestionPage() {
       completed.push(questionId);
       localStorage.setItem(key, JSON.stringify(completed));
     }
-  };
+  }, [assignmentId, questionId]);
 
   /* ---------- FULLSCREEN ENFORCEMENT ---------- */
   useEffect(() => {
@@ -64,45 +64,8 @@ export default function AssignmentSolveQuestionPage() {
     fetchQuestion();
   }, [questionId, navigate]);
 
-  /* ---------- AUTO SUBMIT ON LOAD ---------- */
-  useEffect(() => {
-    if (!question) return;
-    if (!code.trim()) return;
-    if (autoSubmittedRef.current) return;
-
-    autoSubmittedRef.current = true;
-    submitAssignment(true);
-  }, [question, code]);
-
-  /* ---------- RUN ---------- */
-  const runSample = async () => {
-    setLoading(true);
-    setResult(null);
-
-    try {
-      const res = await fetch("https://tssplatform.onrender.com/run", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${getToken()}`
-        },
-        body: JSON.stringify({
-          language,
-          code,
-          testcases: question.sampleTestcases
-        })
-      });
-
-      setResult(await res.json());
-    } catch {
-      setResult({ error: "Execution failed" });
-    } finally {
-      setLoading(false);
-    }
-  };
-
   /* ---------- SUBMIT ---------- */
-  const submitAssignment = async (isAuto = false) => {
+  const submitAssignment = useCallback(async (isAuto = false) => {
     setLoading(true);
     setResult(null);
 
@@ -130,6 +93,43 @@ export default function AssignmentSolveQuestionPage() {
       }
     } catch {
       setResult({ error: "Submission failed" });
+    } finally {
+      setLoading(false);
+    }
+  }, [language, code, questionId, assignmentId, markQuestionCompleted]);
+
+  /* ---------- AUTO SUBMIT ON LOAD ---------- */
+  useEffect(() => {
+    if (!question) return;
+    if (!code.trim()) return;
+    if (autoSubmittedRef.current) return;
+
+    autoSubmittedRef.current = true;
+    submitAssignment(true);
+  }, [question, code, submitAssignment]);
+
+  /* ---------- RUN ---------- */
+  const runSample = async () => {
+    setLoading(true);
+    setResult(null);
+
+    try {
+      const res = await fetch("https://tssplatform.onrender.com/run", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${getToken()}`
+        },
+        body: JSON.stringify({
+          language,
+          code,
+          testcases: question.sampleTestcases
+        })
+      });
+
+      setResult(await res.json());
+    } catch {
+      setResult({ error: "Execution failed" });
     } finally {
       setLoading(false);
     }

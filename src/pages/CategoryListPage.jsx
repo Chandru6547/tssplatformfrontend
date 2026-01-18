@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { getToken, getRole, logout } from "../utils/auth";
 import HumanLoader from "../components/loaders/HumanLoader";
@@ -18,7 +18,7 @@ export default function CategoryListPage() {
   const role = getRole();
 
   /* ---------- FETCH CATEGORIES (MIN 3s LOADER) ---------- */
-  const fetchCategories = async () => {
+  const fetchCategories = useCallback(async () => {
     setPageLoading(true);
     const startTime = Date.now();
 
@@ -47,11 +47,11 @@ export default function CategoryListPage() {
       const remaining = Math.max(3000 - elapsed, 0);
       setTimeout(() => setPageLoading(false), remaining);
     }
-  };
+  }, [courseId, navigate]);
 
   useEffect(() => {
     fetchCategories();
-  }, [courseId]);
+  }, [fetchCategories]);
 
   /* ---------- ADD CATEGORY (ADMIN ONLY) ---------- */
   const handleAddCategory = async () => {

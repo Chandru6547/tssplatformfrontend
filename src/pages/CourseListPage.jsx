@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getToken, getRole, logout, getUserId } from "../utils/auth";
 import "./CourseListPage.css";
@@ -15,7 +15,7 @@ export default function CourseListPage() {
   const role = getRole();
 
   /* ---------- FETCH COURSES (MIN 2s LOADER) ---------- */
-  const fetchCourses = async () => {
+  const fetchCourses = useCallback(async () => {
     setPageLoading(true);
     const startTime = Date.now();
 
@@ -47,11 +47,11 @@ export default function CourseListPage() {
       const remaining = Math.max(3000 - elapsed, 0);
       setTimeout(() => setPageLoading(false), remaining);
     }
-  };
+  }, [navigate]);
 
   useEffect(() => {
     fetchCourses();
-  }, []);
+  }, [fetchCourses]);
 
   /* ---------- ADD COURSE ---------- */
   const handleAddCourse = async () => {

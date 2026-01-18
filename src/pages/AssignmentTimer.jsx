@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import {
-  ASSIGNMENT_DURATION_MS,
   getTimerKey,
   getRemainingTime
 } from "../utils/assignmentTimer";

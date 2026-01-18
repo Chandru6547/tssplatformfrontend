@@ -11,6 +11,38 @@ export default function MCQStudentPage() {
   const navigate = useNavigate();
   const studentId = getUserId();
 
+  /* ---------- CHECK COMPLETED MCQS ---------- */
+  const checkCompletedMCQs = useCallback(async (mcqList) => {
+    try {
+      const requests = mcqList.map(mcq =>
+        fetch(
+          `${process.env.REACT_APP_API_BASE_URL}/api/mcq-submissions/student/${studentId}/mcq/${mcq._id}`,
+          {
+            headers: {
+              Authorization: `Bearer ${getToken()}`
+            }
+          }
+        )
+          .then(res => res.json())
+          .then(data => ({
+            mcqId: mcq._id,
+            completed: Array.isArray(data) && data.length > 0
+          }))
+      );
+
+      const results = await Promise.all(requests);
+
+      const statusMap = {};
+      results.forEach(r => {
+        statusMap[r.mcqId] = r.completed;
+      });
+
+      setCompletedMap(statusMap);
+    } catch (err) {
+      console.error("Failed to check MCQ completion", err);
+    }
+  }, [studentId]);
+
   /* ---------- FETCH MCQS ---------- */
   const fetchMCQs = useCallback(async () => {
     setPageLoading(true);
@@ -47,39 +79,7 @@ export default function MCQStudentPage() {
       const elapsed = Date.now() - startTime;
       setTimeout(() => setPageLoading(false), Math.max(3000 - elapsed, 0));
     }
-  }, [studentId, navigate]);
-
-  /* ---------- CHECK COMPLETED MCQS ---------- */
-  const checkCompletedMCQs = async (mcqList) => {
-    try {
-      const requests = mcqList.map(mcq =>
-        fetch(
-          `${process.env.REACT_APP_API_BASE_URL}/api/mcq-submissions/student/${studentId}/mcq/${mcq._id}`,
-          {
-            headers: {
-              Authorization: `Bearer ${getToken()}`
-            }
-          }
-        )
-          .then(res => res.json())
-          .then(data => ({
-            mcqId: mcq._id,
-            completed: Array.isArray(data) && data.length > 0
-          }))
-      );
-
-      const results = await Promise.all(requests);
-
-      const statusMap = {};
-      results.forEach(r => {
-        statusMap[r.mcqId] = r.completed;
-      });
-
-      setCompletedMap(statusMap);
-    } catch (err) {
-      console.error("Failed to check MCQ completion", err);
-    }
-  };
+  }, [studentId, navigate, checkCompletedMCQs]);
 
   useEffect(() => {
     fetchMCQs();

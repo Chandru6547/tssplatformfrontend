@@ -52,7 +52,7 @@ export default function CreateStudent() {
         setBatches(data);
         setBatch("");
       });
-  }, [year]);
+  }, [campus, year]);
 
   /* ---------------- SUBMIT BULK STUDENTS ---------------- */
   const handleSubmit = async () => {

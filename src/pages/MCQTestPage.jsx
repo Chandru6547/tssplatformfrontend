@@ -204,6 +204,7 @@ export default function MCQTestPage() {
   }, [started, showResult, submitTest]);
 
   /* ---------- TAB SWITCH DETECTION ---------- */
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (!started || showResult) return;
 

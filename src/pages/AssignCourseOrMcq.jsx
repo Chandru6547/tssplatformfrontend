@@ -64,7 +64,7 @@ export default function AssignCourseOrMcq() {
         setBatches(data);
         setBatch("");
       });
-  }, [year]);
+  }, [campus, year]);
 
   /* ---------- FETCH STUDENTS ---------- */
   useEffect(() => {
@@ -78,7 +78,7 @@ export default function AssignCourseOrMcq() {
       .then(res => res.json())
       .then(setStudents)
       .catch(() => setStudents([]));
-  }, [batch]);
+  }, [campus, year, batch]);
 
   /* ---------- FETCH ITEMS BASED ON ASSIGN TYPE ---------- */
   useEffect(() => {
