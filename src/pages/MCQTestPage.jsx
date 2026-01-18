@@ -149,46 +149,45 @@ export default function MCQTestPage() {
 
   /* ================= FETCH MCQ + SHUFFLE (UPDATED) ================= */
   useEffect(() => {
-    const fetchMCQ = async () => {
-      const res = await fetch(
-        `${process.env.REACT_APP_API_BASE_URL}/api/mcqs/${mcqId}`,
-        { headers: { Authorization: `Bearer ${getToken()}` } }
+  const fetchMCQ = async () => {
+    const res = await fetch(
+      `${process.env.REACT_APP_API_BASE_URL}/api/mcqs/${mcqId}`,
+      { headers: { Authorization: `Bearer ${getToken()}` } }
+    );
+
+    if (res.status === 401 || res.status === 403) {
+      logout();
+      navigate("/login");
+      return;
+    }
+
+    const data = await res.json();
+
+    const savedOrder = localStorage.getItem(ORDER_KEY);
+    let finalQuestions;
+
+    if (savedOrder) {
+      const order = JSON.parse(savedOrder);
+      finalQuestions = order
+        .map(id => data.questions.find(q => q._id === id))
+        .filter(Boolean);
+    } else {
+      finalQuestions = shuffleArray(data.questions);
+      localStorage.setItem(
+        ORDER_KEY,
+        JSON.stringify(finalQuestions.map(q => q._id))
       );
+    }
 
-      if (res.status === 401 || res.status === 403) {
-        logout();
-        navigate("/login");
-        return;
-      }
+    setMcq({ ...data, questions: finalQuestions });
 
-      const data = await res.json();
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) setAnswers(JSON.parse(saved));
+  };
 
-      /* ---------- SHUFFLE QUESTIONS PER USER ---------- */
-      const savedOrder = localStorage.getItem(ORDER_KEY);
-      let finalQuestions;
+  fetchMCQ();
+}, [mcqId, navigate, ORDER_KEY, STORAGE_KEY]);
 
-      if (savedOrder) {
-        const order = JSON.parse(savedOrder);
-        finalQuestions = order
-          .map(id => data.questions.find(q => q._id === id))
-          .filter(Boolean);
-      } else {
-        finalQuestions = shuffleArray(data.questions);
-        localStorage.setItem(
-          ORDER_KEY,
-          JSON.stringify(finalQuestions.map(q => q._id))
-        );
-      }
-
-      setMcq({ ...data, questions: finalQuestions });
-
-      /* ---------- RESTORE ANSWERS ---------- */
-      const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved) setAnswers(JSON.parse(saved));
-    };
-
-    fetchMCQ();
-  }, [mcqId, navigate]);
 
   /* ---------- FULLSCREEN EXIT ---------- */
   useEffect(() => {
