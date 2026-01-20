@@ -3,7 +3,7 @@ import React from "react";
 import { getEmail } from "../utils/auth";
 import "./StudentTickets.css";
 
-const BASE_URL = "http://localhost:3000/api/tickets";
+const BASE_URL = "https://tssplatform.onrender.com/api/tickets";
 
 export default function StudentTickets() {
   const email = getEmail();

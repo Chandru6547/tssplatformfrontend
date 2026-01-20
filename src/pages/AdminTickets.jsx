@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import React from "react";
 import "./AdminTickets.css";
 
-const BASE_URL = "http://localhost:3000/api/tickets";
+const BASE_URL = "https://tssplatform.onrender.com/api/tickets";
 const PAGE_SIZE = 5;
 
 export default function AdminTickets() {

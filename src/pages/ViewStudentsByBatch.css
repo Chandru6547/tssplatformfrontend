@@ -3,6 +3,7 @@
   animation: fadeIn 0.4s ease;
 }
 
+/* ---------- HEADER ---------- */
 .page-header h2 {
   margin: 0;
   font-size: 24px;
@@ -63,9 +64,10 @@
 
 /* ---------- TABLE ---------- */
 .table-wrapper {
-  overflow-x: auto;
   background: #fff;
   border-radius: 14px;
+  border: 1px solid #eee;
+  overflow-x: auto;
 }
 
 .students-table {
@@ -73,24 +75,48 @@
   border-collapse: collapse;
 }
 
-.students-table thead {
-  position: sticky;
-  top: 0;
-  background: #f6f7fb;
-}
-
 .students-table th,
 .students-table td {
   padding: 14px;
   border-bottom: 1px solid #eee;
+  text-align: left;
 }
 
-.students-table tbody tr {
-  transition: background 0.15s ease;
+.students-table thead {
+  background: #f6f7fb;
 }
 
 .students-table tbody tr:hover {
   background: #f9fbff;
+}
+
+/* ---------- PAGINATION ---------- */
+.pagination {
+  margin-top: 18px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+}
+
+.pagination button {
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: none;
+  background: #6c7cff;
+  color: #fff;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.pagination button:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
+.pagination span {
+  font-size: 14px;
+  color: #444;
 }
 
 /* ---------- STATES ---------- */
@@ -102,7 +128,14 @@
   font-size: 16px;
 }
 
+/* ---------- ANIMATION ---------- */
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(8px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }

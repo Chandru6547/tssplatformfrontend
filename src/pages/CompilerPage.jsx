@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import CodeEditor from "../components/CodeEditor";
 import "./CompilerPage.css";
 
@@ -10,6 +10,18 @@ export default function CompilerPage() {
   const [testcases, setTestcases] = useState([{ input: "", output: "" }]);
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [expandedWarning, setExpandedWarning] = useState(null);
+  
+  const resultRef = useRef(null);
+
+  /* ---------- AUTO SCROLL TO RESULT ---------- */
+  useEffect(() => {
+    if (result && resultRef.current) {
+      setTimeout(() => {
+        resultRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+      }, 300);
+    }
+  }, [result]);
 
   const runCode = async () => {
     setLoading(true);
@@ -23,7 +35,7 @@ export default function CompilerPage() {
 
     try {
       const res = await fetch(
-        `${process.env.REACT_APP_API_BASE_URL}${endpoint}`,
+        `https://tssplatform.onrender.com${endpoint}`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -46,6 +58,42 @@ export default function CompilerPage() {
     setTestcases(updated);
   };
 
+  /* ---------- PARSE WARNINGS ---------- */
+  const parseWarnings = (errorText) => {
+    if (!errorText) return [];
+    
+    const lines = errorText.split('\n');
+    const warnings = [];
+    let currentWarning = null;
+
+    lines.forEach((line) => {
+      // Match warning line format: /path/file.c:1:1: warning: message
+      const warningMatch = line.match(/^(.*?):(\d+):(\d+):\s*(warning|error):\s*(.+)$/);
+      
+      if (warningMatch) {
+        if (currentWarning) {
+          warnings.push(currentWarning);
+        }
+        currentWarning = {
+          file: warningMatch[1],
+          line: warningMatch[2],
+          col: warningMatch[3],
+          type: warningMatch[4],
+          message: warningMatch[5],
+          details: []
+        };
+      } else if (currentWarning && line.trim()) {
+        currentWarning.details.push(line);
+      }
+    });
+
+    if (currentWarning) {
+      warnings.push(currentWarning);
+    }
+
+    return warnings;
+  };
+
   return (
     <div className="compiler-root">
       <div className="compiler-container">
@@ -53,7 +101,7 @@ export default function CompilerPage() {
         {/* ================= EDITOR ================= */}
         <div className="editor-card material-card">
           <div className="editor-header">
-            <h2>Online Compiler</h2>
+            <h2>IDE</h2>
 
             <div className="editor-controls">
               {/* LANGUAGE */}
@@ -105,9 +153,47 @@ export default function CompilerPage() {
 
         {/* ================= RESULT SUMMARY ================= */}
         {result && (
-          <div className="result-card material-card">
+          <div className="result-card material-card" ref={resultRef}>
             {result.error && (
-              <div className="result-error">{result.error}</div>
+              <div className="warnings-section">
+                <div className="warnings-header">
+                  <span className="warning-icon">⚠️</span>
+                  <h3>Compiler Warnings</h3>
+                  <span className="warning-count">{parseWarnings(result.error).length}</span>
+                </div>
+
+                <div className="warnings-list">
+                  {parseWarnings(result.error).map((warning, idx) => (
+                    <div key={idx} className="warning-item">
+                      <div 
+                        className="warning-header-item"
+                        onClick={() => setExpandedWarning(expandedWarning === idx ? null : idx)}
+                      >
+                        <span className="warning-toggle">
+                          {expandedWarning === idx ? '▼' : '▶'}
+                        </span>
+                        <span className={`warning-type ${warning.type}`}>
+                          {warning.type.toUpperCase()}
+                        </span>
+                        <span className="warning-location">
+                          {warning.file.split('/').pop()}:{warning.line}:{warning.col}
+                        </span>
+                        <span className="warning-message">{warning.message}</span>
+                      </div>
+
+                      {expandedWarning === idx && warning.details.length > 0 && (
+                        <div className="warning-details">
+                          {warning.details.map((detail, dIdx) => (
+                            <div key={dIdx} className="detail-line">
+                              <pre>{detail}</pre>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
             )}
 
             {result.verdict && (

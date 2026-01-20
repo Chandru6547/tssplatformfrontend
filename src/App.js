@@ -32,6 +32,10 @@ import ViewStudentBatchListPage from "./pages/ViewStudentBatchListPage";
 import ViewStudentsByBatch from "./pages/ViewStudentsByBatch";
 import StudentTickets from "./pages/StudentTickets";
 import AdminTickets from "./pages/AdminTickets";
+import DashboardPage from "./pages/DashboardPage";
+import CourseListPageLibrary from "./pages/CourseListPageLibrary";
+import AssignmentListPageLibrary from "./pages/AssignmentListPageLibrary";
+import MCQListPageLibrary from "./pages/MCQListPageLibrary";
 import "./App.css";
 
 export default function App() {
@@ -179,6 +183,10 @@ export default function App() {
                <Route path="/report/mcqs" element={<MCQReportPage />} />
                 <Route path="/create-student" element={<CreateStudent />} />
                 <Route path="/manage-curriculam" element={<AssignCourseOrMcq />} />
+                <Route path="/tss-library-dashboard" element={<DashboardPage  />} />
+                <Route path="/courses-library" element={<CourseListPageLibrary />} />
+                <Route path="/assignments-library" element={<AssignmentListPageLibrary />} />
+                <Route path="/mcqs-library" element={<MCQListPageLibrary />} />
               <Route path="*" element={<Navigate to="/" />} />
 
               <Route

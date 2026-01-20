@@ -16,6 +16,7 @@ import {
   FaSitemap,
   FaUsers
 } from "react-icons/fa";
+import {getEmail } from "../utils/auth";
 
 import { logout, isAuthenticated, getRole } from "../utils/auth";
 import "./Navbar.css";
@@ -97,6 +98,15 @@ export default function Navbar() {
               <FaTasks />
               <span>Raise a Ticket</span>
             </Link>
+            <a
+            href={`https://workflow.teamtechsign.in?apikey=APIKEY-TSS-STUDENT-TRACKER-9f8a7b6c5d4e?useremail=${getEmail()}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="nav-item"
+          >
+            <FaTasks />
+            <span>Student Tracker</span>
+          </a>
           </>
         )}
 
@@ -177,10 +187,16 @@ export default function Navbar() {
               <FaUsers />
               <span>View Tickets</span>
             </Link>
+             <Link
+              to="/tss-library-dashboard"
+              className={`nav-item ${isActive("/tss-library-dashboard")}`}
+            >
+              <FaUsers />
+              <span>TSS Library</span>
+            </Link>
           </>
         )}
       </nav>
-
       {/* ---------- FOOTER ---------- */}
       <div className="navbar-footer">
         {isAuthenticated() && (
