@@ -14,12 +14,17 @@ import {
   FaSignOutAlt,
   FaUserPlus,
   FaSitemap,
-  FaUsers
+  FaUsers,
+  FaLifeRing,
+  FaClipboardList,
+  FaBookReader,
+  FaClipboardCheck 
 } from "react-icons/fa";
-import {getEmail } from "../utils/auth";
 
+import { getEmail } from "../utils/auth";
 import { logout, isAuthenticated, getRole } from "../utils/auth";
 import "./Navbar.css";
+// import tssLogo from "../assests/tsslogoimg.png";
 
 export default function Navbar() {
   const navigate = useNavigate();
@@ -64,6 +69,14 @@ export default function Navbar() {
               <span>MCQs</span>
             </Link>
 
+            <Link
+              to="/view-mcqs-answer"
+              className={`nav-item ${isActive("/view-mcqs-answer")}`}
+            >
+              <FaClipboardCheck  />
+              <span>View MCQs Answer</span>
+            </Link>
+
             <Link to="/comingsoon" className="nav-item">
               <FaRobot />
               <span>AI Interview</span>
@@ -91,22 +104,25 @@ export default function Navbar() {
               <FaTasks />
               <span>Assignments</span>
             </Link>
+
             <Link
               to="/raise-ticket"
               className={`nav-item ${isActive("/raise-ticket")}`}
             >
-              <FaTasks />
+              <FaLifeRing />
               <span>Raise a Ticket</span>
             </Link>
+          
+
             <a
-            href={`https://workflow.teamtechsign.in?apikey=APIKEY-TSS-STUDENT-TRACKER-9f8a7b6c5d4e?useremail=${getEmail()}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="nav-item"
-          >
-            <FaTasks />
-            <span>Student Tracker</span>
-          </a>
+              href={`https://workflow.teamtechsign.in?apikey=APIKEY-TSS-STUDENT-TRACKER-9f8a7b6c5d4e?useremail=${getEmail()}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="nav-item"
+            >
+              <FaChartLine />
+              <span>Student Tracker</span>
+            </a>
           </>
         )}
 
@@ -162,7 +178,7 @@ export default function Navbar() {
               to="/assignments/create"
               className={`nav-item ${isActive("/assignments/create")}`}
             >
-              <FaPlusSquare />
+              <FaClipboardList />
               <span>Create Assignments</span>
             </Link>
 
@@ -173,6 +189,7 @@ export default function Navbar() {
               <FaTasks />
               <span>View Assignments</span>
             </Link>
+
             <Link
               to="/view-students-campus"
               className={`nav-item ${isActive("/view-students-campus")}`}
@@ -180,23 +197,26 @@ export default function Navbar() {
               <FaUsers />
               <span>View Students</span>
             </Link>
-             <Link
+
+            <Link
               to="/view-all-tickets"
               className={`nav-item ${isActive("/view-all-tickets")}`}
             >
-              <FaUsers />
+              <FaLifeRing />
               <span>View Tickets</span>
             </Link>
-             <Link
+
+            <Link
               to="/tss-library-dashboard"
               className={`nav-item ${isActive("/tss-library-dashboard")}`}
             >
-              <FaUsers />
+              <FaBookReader />
               <span>TSS Library</span>
             </Link>
           </>
         )}
       </nav>
+
       {/* ---------- FOOTER ---------- */}
       <div className="navbar-footer">
         {isAuthenticated() && (

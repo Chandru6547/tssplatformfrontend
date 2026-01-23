@@ -1,0 +1,243 @@
+/* ---------- PAGE ---------- */
+.mcq-page {
+  padding: 24px;
+  background: #f8f9fc;
+  min-height: 100vh;
+}
+
+.page-subtitle {
+  color: #555;
+  margin-bottom: 20px;
+}
+
+/* ---------- GRID ---------- */
+.mcq-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 20px;
+}
+
+/* ---------- CARD ---------- */
+.mcq-card-pro {
+  background: linear-gradient(145deg, #ffffff, #f3f6ff);
+  border-radius: 16px;
+  padding: 20px;
+  cursor: pointer;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.mcq-card-pro:hover {
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.15);
+}
+
+/* ---------- CARD HEADER ---------- */
+.mcq-card-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.mcq-badge {
+  background: linear-gradient(90deg, #4c6ef5, #15aabf);
+  color: #fff;
+  font-size: 12px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-weight: 600;
+}
+
+.mcq-category {
+  font-size: 12px;
+  background: #eef2ff;
+  padding: 4px 10px;
+  border-radius: 20px;
+}
+
+/* ---------- CARD CONTENT ---------- */
+.mcq-title {
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+
+.mcq-meta {
+  font-size: 14px;
+  margin-bottom: 16px;
+  color: #444;
+}
+
+/* ---------- BUTTON ---------- */
+.mcq-action {
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: none;
+  background: linear-gradient(90deg, #4c6ef5, #364fc7);
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.mcq-card-pro:hover .mcq-action {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 14px rgba(76, 110, 245, 0.4);
+}
+
+/* ---------- MODAL ---------- */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal {
+  width: 720px;
+  max-width: 96%;
+  background: #fff;
+  padding: 26px;
+  border-radius: 16px;
+  position: relative;
+  animation: zoomIn 0.3s;
+  user-select: none;
+}
+
+@keyframes zoomIn {
+  from { transform: scale(0.9); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+/* ---------- WATERMARK ---------- */
+.watermark {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  color: rgba(0,0,0,0.05);
+  transform: rotate(-25deg);
+  pointer-events: none;
+}
+
+/* ---------- PROGRESS ---------- */
+.progress-bar {
+  height: 6px;
+  background: #eee;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #4c6ef5, #15aabf);
+  transition: width 0.3s;
+}
+
+.progress-text {
+  margin: 8px 0;
+  font-size: 14px;
+  color: #555;
+}
+
+/* ---------- QUESTION ---------- */
+.question-text {
+  margin-top: 10px;
+}
+
+/* ---------- OPTIONS ---------- */
+.option {
+  padding: 12px;
+  background: #f5f7ff;
+  border-radius: 10px;
+  margin-bottom: 10px;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.option.correct { background: #d4f7dc; }
+.option.wrong { background: #fdecea; }
+.option.selected { border: 2px solid #4c6ef5; }
+
+.pulse {
+  animation: pulse 0.6s;
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.03); }
+  100% { transform: scale(1); }
+}
+
+/* ---------- TAGS ---------- */
+.tag {
+  margin-left: auto;
+  padding: 4px 8px;
+  font-size: 12px;
+  border-radius: 4px;
+  color: #fff;
+}
+
+.your-answer { background: #4c6ef5; }
+.correct-tag { background: #2e7d32; }
+
+/* ---------- EXPLANATION ---------- */
+.explanation {
+  margin-top: 12px;
+  padding: 14px;
+  background: #eef3ff;
+  border-radius: 10px;
+}
+
+/* ---------- DOT NAV ---------- */
+.dots {
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+  margin-top: 14px;
+}
+
+.dot {
+  width: 10px;
+  height: 10px;
+  background: #ccc;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.dot.active {
+  background: #4c6ef5;
+}
+
+/* ---------- ACTIONS ---------- */
+.modal-actions {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 18px;
+}
+
+.modal-actions button {
+  padding: 8px 16px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+}
+
+.close {
+  background: #e53935;
+  color: #fff;
+}
+
+/* ---------- LOADING ---------- */
+.loading {
+  padding: 40px;
+  text-align: center;
+}

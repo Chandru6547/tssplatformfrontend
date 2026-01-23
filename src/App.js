@@ -36,6 +36,10 @@ import DashboardPage from "./pages/DashboardPage";
 import CourseListPageLibrary from "./pages/CourseListPageLibrary";
 import AssignmentListPageLibrary from "./pages/AssignmentListPageLibrary";
 import MCQListPageLibrary from "./pages/MCQListPageLibrary";
+import ViewAssignmentReport from "./pages/ViewAssignmentReport";
+import ViewMcqsAnswer from "./pages/ViewMcqsAnswer";
+import MCQCategoryPage from "./pages/MCQCategoryPage";
+import MCQListByCategory from "./pages/MCQListByCategory";
 import "./App.css";
 
 export default function App() {
@@ -75,6 +79,14 @@ export default function App() {
                 }
               />
 
+              <Route
+                path="/view-mcqs-answer"
+                element={
+                  <ProtectedRoute allowedRoles={["admin", "student"]}>
+                    <ViewMcqsAnswer />
+                  </ProtectedRoute>
+                }
+              />
               <Route
                 path="/courses/:courseId/categories"
                 element={
@@ -188,7 +200,8 @@ export default function App() {
                 <Route path="/assignments-library" element={<AssignmentListPageLibrary />} />
                 <Route path="/mcqs-library" element={<MCQListPageLibrary />} />
               <Route path="*" element={<Navigate to="/" />} />
-
+              <Route path="/mcqs-list-all" element={<MCQCategoryPage />} />
+              <Route path="/mcqs/category/:category" element={<MCQListByCategory />} /> 
               <Route
                 path="/assignments/viewall"
                 element={
@@ -261,6 +274,10 @@ export default function App() {
                 </ProtectedRoute>
               }
             />
+            <Route
+                path="/view-assignment-report"
+                element={<ViewAssignmentReport />}
+              />
             </Routes>
           </main>
         </div>

@@ -1,0 +1,88 @@
+.assignment-report-page {
+  padding: 20px;
+}
+
+/* ---------- HEADER ---------- */
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 20px;
+}
+
+.header-right {
+  display: flex;
+  gap: 10px;
+}
+
+select,
+button {
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+button {
+  border: none;
+  background: #198754;
+  color: #fff;
+  cursor: pointer;
+}
+
+button:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
+.analysis-btn {
+  background: #0d6efd;
+}
+
+/* ---------- TABLE ---------- */
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th,
+td {
+  padding: 10px;
+  border-bottom: 1px solid #ddd;
+}
+
+th {
+  background: #f8f8f8;
+  text-align: left;
+}
+
+/* ---------- MODAL ---------- */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.modal-box {
+  background: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  width: 80%;
+  max-width: 800px;
+}
+
+.analysis-sub {
+  color: #666;
+  margin-bottom: 10px;
+}
+
+.close-btn {
+  margin-top: 20px;
+  background: #dc3545;
+}
+
+.status {
+  color: #666;
+}

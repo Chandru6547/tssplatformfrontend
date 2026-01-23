@@ -106,3 +106,31 @@
 .navbar-menu {
   padding-top: 10px;
 }
+.navbar-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 16px;
+}
+
+.navbar-logo {
+  width: 42px;
+  height: 42px;
+  object-fit: contain;
+}
+
+.logo-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.1;
+}
+
+.logo-title {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.logo-sub {
+  font-size: 12px;
+  opacity: 0.8;
+}

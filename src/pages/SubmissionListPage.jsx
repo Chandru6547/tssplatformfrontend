@@ -148,7 +148,19 @@ export default function SubmissionListPage() {
           >
             View MCQs Report
           </button>
+
+          <button
+            className="assignment-report-btn"
+            onClick={() =>
+              navigate("/view-assignment-report", {
+                state: { college, year, batch }
+              })
+            }
+          >
+            View Assignment Report
+          </button>
         </div>
+
       </div>
 
       {/* STUDENT TABLE */}

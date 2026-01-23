@@ -32,7 +32,7 @@ export default function DashboardPage() {
         {/* MCQS */}
         <div
           className="dashboard-card"
-          onClick={() => navigate("/mcqs-library")}
+          onClick={() => navigate("/mcqs-list-all")}
         >
           <div className="card-icon">❓</div>
           <h2>MCQs</h2>
