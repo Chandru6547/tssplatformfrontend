@@ -14,7 +14,7 @@ export default function CourseListPage() {
   const navigate = useNavigate();
   const role = getRole();
 
-  /* ---------- FETCH COURSES (MIN 2s LOADER) ---------- */
+  /* ---------- FETCH COURSES (MIN 3s LOADER) ---------- */
   const fetchCourses = useCallback(async () => {
     setPageLoading(true);
     const startTime = Date.now();
@@ -59,17 +59,14 @@ export default function CourseListPage() {
 
     setLoading(true);
     try {
-      const res = await fetch(
-        "https://tssplatform.onrender.com/courses",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${getToken()}`
-          },
-          body: JSON.stringify({ name, description })
-        }
-      );
+      const res = await fetch("https://tssplatform.onrender.com/courses", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${getToken()}`
+        },
+        body: JSON.stringify({ name, description })
+      });
 
       if (res.status === 401 || res.status === 403) {
         logout();
@@ -88,30 +85,28 @@ export default function CourseListPage() {
     }
   };
 
-  /* ---------- JUMPING PEOPLE LOADER ---------- */
+  /* ---------- LOADER ---------- */
   if (pageLoading) {
-  return (
-    <div className="course-loader">
-      <div className="human-loader">
-        <div className="head"></div>
-        <div className="body"></div>
+    return (
+      <div className="course-loader">
+        <div className="human-loader">
+          <div className="head"></div>
+          <div className="body"></div>
+          <div className="arm left-arm"></div>
+          <div className="arm right-arm"></div>
+          <div className="leg left-leg"></div>
+          <div className="leg right-leg"></div>
+        </div>
 
-        <div className="arm left-arm"></div>
-        <div className="arm right-arm"></div>
-
-        <div className="leg left-leg"></div>
-        <div className="leg right-leg"></div>
+        <p className="loader-text">
+          Loading courses
+          <span className="dots">
+            <i>.</i><i>.</i><i>.</i>
+          </span>
+        </p>
       </div>
-
-      <p className="loader-text">
-        Loading courses
-        <span className="dots">
-          <i>.</i><i>.</i><i>.</i>
-        </span>
-      </p>
-    </div>
-  );
-}
+    );
+  }
 
   return (
     <div className="course-page">
@@ -136,6 +131,10 @@ export default function CourseListPage() {
           <div key={course._id} className="course-card">
             <h3>{course.name}</h3>
 
+            {course.description && (
+              <p className="course-desc">{course.description}</p>
+            )}
+
             <button
               className="course-btn"
               onClick={() =>
@@ -146,6 +145,16 @@ export default function CourseListPage() {
             </button>
           </div>
         ))}
+
+        {/* ---------- GHOST PLACEHOLDERS ---------- */}
+        {courses.length < 3 &&
+          Array.from({ length: 3 - courses.length }).map((_, index) => (
+            <div key={`ghost-${index}`} className="course-card ghost-card">
+              <div className="ghost-title"></div>
+              <div className="ghost-line"></div>
+              <div className="ghost-button"></div>
+            </div>
+          ))}
       </div>
 
       {role === "admin" && showAddDialog && (

@@ -12,7 +12,7 @@ export default function AssignCourseOrMcq() {
   /* ---------- SELECTION ---------- */
   const [campus, setCampus] = useState("");
   const [year, setYear] = useState("");
-  const [batch, setBatch] = useState("");
+  const [selectedBatches, setSelectedBatches] = useState([]);
 
   /* ---------- ASSIGN TYPE ---------- */
   const [assignType, setAssignType] = useState(""); // course | mcq | assignment
@@ -46,7 +46,7 @@ export default function AssignCourseOrMcq() {
         setYears(data);
         setBatches([]);
         setYear("");
-        setBatch("");
+        setSelectedBatches([]);
       });
   }, [campus]);
 
@@ -62,23 +62,42 @@ export default function AssignCourseOrMcq() {
       .then(res => res.json())
       .then(data => {
         setBatches(data);
-        setBatch("");
+        setSelectedBatches([]);
       });
   }, [campus, year]);
 
-  /* ---------- FETCH STUDENTS ---------- */
+  /* ---------- FETCH STUDENTS (MULTI BATCH) ---------- */
   useEffect(() => {
-    if (!campus || !year || !batch) return;
+    if (!campus || !year || selectedBatches.length === 0) return;
 
-    fetch(
-      `${API_BASE}/api/students/students?college=${encodeURIComponent(
-        campus
-      )}&year=${year}&batch=${batch}`
-    )
-      .then(res => res.json())
-      .then(setStudents)
-      .catch(() => setStudents([]));
-  }, [campus, year, batch]);
+    const fetchStudents = async () => {
+      try {
+        let allStudents = [];
+
+        for (const batch of selectedBatches) {
+          const res = await fetch(
+            `${API_BASE}/api/students/students?college=${encodeURIComponent(
+              campus
+            )}&year=${year}&batch=${batch}`
+          );
+
+          const data = await res.json();
+          allStudents.push(...data);
+        }
+
+        /* remove duplicate students by email */
+        const uniqueStudents = Array.from(
+          new Map(allStudents.map(s => [s.email, s])).values()
+        );
+
+        setStudents(uniqueStudents);
+      } catch (err) {
+        setStudents([]);
+      }
+    };
+
+    fetchStudents();
+  }, [campus, year, selectedBatches]);
 
   /* ---------- FETCH ITEMS BASED ON ASSIGN TYPE ---------- */
   useEffect(() => {
@@ -118,7 +137,7 @@ export default function AssignCourseOrMcq() {
     }
 
     if (students.length === 0) {
-      setMessage("❌ No students found in this batch");
+      setMessage("❌ No students found in selected batches");
       return;
     }
 
@@ -140,10 +159,7 @@ export default function AssignCourseOrMcq() {
 
     if (assignType === "assignment") {
       endpoint = "/addAssignmentToUser";
-      payloadBuilder = email => ({
-        email,
-        assignmentId: selectedItem
-      });
+      payloadBuilder = email => ({ email, assignmentId: selectedItem });
     }
 
     for (const student of students) {
@@ -158,7 +174,7 @@ export default function AssignCourseOrMcq() {
       }
     }
 
-    setMessage("✅ Assigned successfully to entire batch");
+    setMessage("✅ Assigned successfully to selected batches");
     setLoading(false);
   };
 
@@ -178,7 +194,11 @@ export default function AssignCourseOrMcq() {
         </select>
 
         {/* YEAR */}
-        <select value={year} onChange={e => setYear(e.target.value)} disabled={!campus}>
+        <select
+          value={year}
+          onChange={e => setYear(e.target.value)}
+          disabled={!campus}
+        >
           <option value="">Select Year</option>
           {years.map(y => (
             <option key={y._id} value={y.Year || y.year}>
@@ -187,15 +207,34 @@ export default function AssignCourseOrMcq() {
           ))}
         </select>
 
-        {/* BATCH */}
-        <select value={batch} onChange={e => setBatch(e.target.value)} disabled={!year}>
-          <option value="">Select Batch</option>
-          {batches.map(b => (
-            <option key={b._id} value={b.Batchname || b.batch}>
-              {b.Batchname || b.batch}
-            </option>
-          ))}
-        </select>
+        {/* BATCH CHECKBOXES */}
+        {batches.length > 0 && (
+          <div className="batch-checkbox-group">
+            <p className="label">Select Batches</p>
+
+            {batches.map(b => {
+              const value = b.Batchname || b.batch;
+
+              return (
+                <label key={b._id} className="batch-checkbox">
+                  <input
+                    type="checkbox"
+                    checked={selectedBatches.includes(value)}
+                    onChange={e => {
+                      const checked = e.target.checked;
+                      setSelectedBatches(prev =>
+                        checked
+                          ? [...prev, value]
+                          : prev.filter(v => v !== value)
+                      );
+                    }}
+                  />
+                  {value}
+                </label>
+              );
+            })}
+          </div>
+        )}
 
         {/* ASSIGN TYPE */}
         <select value={assignType} onChange={e => setAssignType(e.target.value)}>
@@ -242,7 +281,7 @@ export default function AssignCourseOrMcq() {
         )}
 
         <button disabled={loading} onClick={handleAssign}>
-          {loading ? "Assigning..." : "Assign to Batch"}
+          {loading ? "Assigning..." : "Assign to Selected Batches"}
         </button>
       </div>
 
@@ -250,4 +289,3 @@ export default function AssignCourseOrMcq() {
     </div>
   );
 }
-  

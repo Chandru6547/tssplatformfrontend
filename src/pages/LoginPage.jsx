@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { login } from "../utils/auth";
 import "./LoginPage.css";
 import loginImg from "../assests/Login.png";
@@ -32,14 +32,13 @@ export default function LoginPage() {
 
       if (!res.ok) {
         setError(data.message || "Login failed");
-        setLoading(false);
         return;
       }
 
       login(data.token, data.role, data.userId, email);
       navigate("/");
       window.location.reload();
-    } catch (err) {
+    } catch {
       setError("Server not reachable");
     } finally {
       setLoading(false);
@@ -48,12 +47,10 @@ export default function LoginPage() {
 
   return (
     <div className="login-page">
-      {/* LEFT IMAGE */}
       <div className="login-left">
         <img src={loginImg} alt="Login" />
       </div>
 
-      {/* RIGHT FORM */}
       <div className="login-right">
         <div className="login-card">
           <h2>Welcome Back 👋</h2>
@@ -68,7 +65,6 @@ export default function LoginPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                autoFocus
               />
             </div>
 
@@ -89,6 +85,10 @@ export default function LoginPage() {
                   {showPwd ? "Hide" : "Show"}
                 </span>
               </div>
+            </div>
+
+            <div className="forgot">
+              <Link to="/forgot-password">Forgot password?</Link>
             </div>
 
             {error && <p className="error">{error}</p>}

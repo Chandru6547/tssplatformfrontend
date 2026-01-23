@@ -20,14 +20,6 @@ export default function QuestionUploadPage() {
   const [courseId, setCourseId] = useState("");
   const [categoryId, setCategoryId] = useState("");
 
-  const [isPredefinedOnly, setIsPredefinedOnly] = useState(false);
-  const [predefinedCode, setPredefinedCode] = useState([
-    { language: "python", code: "" },
-    { language: "c", code: "" },
-    { language: "cpp", code: "" },
-    { language: "java", code: "" }
-  ]);
-
   const [sampleTestcases, setSampleTestcases] = useState([
     { input: "", output: "" }
   ]);
@@ -63,6 +55,23 @@ export default function QuestionUploadPage() {
     }
   }, []);
 
+  /* ---------------- RESET FORM ---------------- */
+  const resetForm = () => {
+    setTitle("");
+    setDifficulty("Easy");
+    setDescription("");
+    setCourseId("");
+    setCategoryId("");
+    setCategories([]);
+    setSampleTestcases([{ input: "", output: "" }]);
+    setHiddenTestcases([{ input: "", output: "" }]);
+    setErrors({});
+
+    if (quillInstanceRef.current) {
+      quillInstanceRef.current.setContents([]);
+    }
+  };
+
   /* ---------------- FETCH QUESTION FOR EDITING ---------------- */
   useEffect(() => {
     if (!questionId) return;
@@ -78,18 +87,17 @@ export default function QuestionUploadPage() {
         setDescription(question.description);
         setCourseId(question.courseId);
         setCategoryId(question.categoryId);
-        setSampleTestcases(question.sampleTestcases || [{ input: "", output: "" }]);
-        setHiddenTestcases(question.hiddenTestcases || [{ input: "", output: "" }]);
-
-        /* ⭐ LOAD PREDEFINED DATA */
-        setIsPredefinedOnly(question.isPredefinedOnly || false);
-        if (question.predefinedCode) {
-          setPredefinedCode(question.predefinedCode);
-        }
+        setSampleTestcases(
+          question.sampleTestcases || [{ input: "", output: "" }]
+        );
+        setHiddenTestcases(
+          question.hiddenTestcases || [{ input: "", output: "" }]
+        );
 
         setTimeout(() => {
           if (quillInstanceRef.current) {
-            quillInstanceRef.current.root.innerHTML = question.description;
+            quillInstanceRef.current.root.innerHTML =
+              question.description;
           }
         }, 100);
       })
@@ -130,13 +138,7 @@ export default function QuestionUploadPage() {
     setList(updated);
   };
 
-  const updatePredefined = (lang, value) => {
-    setPredefinedCode(prev =>
-      prev.map(p => (p.language === lang ? { ...p, code: value } : p))
-    );
-  };
-
-  /* ---------------- VALIDATION (UNCHANGED + ADDITION) ---------------- */
+  /* ---------------- VALIDATION ---------------- */
   const validate = () => {
     const e = {};
 
@@ -147,16 +149,12 @@ export default function QuestionUploadPage() {
       e.description = "Description is required";
 
     if (!sampleTestcases.some(t => t.input.trim() && t.output.trim()))
-      e.sampleTestcases = "At least one valid sample testcase is required";
+      e.sampleTestcases =
+        "At least one valid sample testcase is required";
 
     if (!hiddenTestcases.some(t => t.input.trim() && t.output.trim()))
-      e.hiddenTestcases = "At least one valid hidden testcase is required";
-
-    if (isPredefinedOnly) {
-      const hasCode = predefinedCode.some(p => p.code.trim());
-      if (!hasCode)
-        e.predefinedCode = "Add predefined code for at least one language";
-    }
+      e.hiddenTestcases =
+        "At least one valid hidden testcase is required";
 
     setErrors(e);
     return Object.keys(e).length === 0;
@@ -188,11 +186,7 @@ export default function QuestionUploadPage() {
           courseId,
           categoryId,
           sampleTestcases,
-          hiddenTestcases,
-
-          /* ⭐ PREDEFINED PAYLOAD */
-          isPredefinedOnly,
-          predefinedCode: isPredefinedOnly ? predefinedCode : []
+          hiddenTestcases
         })
       });
 
@@ -205,8 +199,15 @@ export default function QuestionUploadPage() {
       if (!res.ok) throw new Error("Failed");
 
       setShowPopup(true);
+
+      /* RESET ONLY AFTER CREATE */
+      if (!questionId) {
+        resetForm();
+      }
     } catch (err) {
-      alert(`Error ${questionId ? "updating" : "creating"} question`);
+      alert(
+        `Error ${questionId ? "updating" : "creating"} question`
+      );
       console.error(err);
     } finally {
       setLoading(false);
@@ -217,29 +218,37 @@ export default function QuestionUploadPage() {
   return (
     <div className="page-root">
       <div className="main-card">
-
         <h2 className="page-heading">Create Question</h2>
 
-        {/* TITLE */}
         <div className="form-group">
           <label>Title</label>
-          <input value={title} onChange={e => setTitle(e.target.value)} />
-          {errors.title && <p className="error-text">{errors.title}</p>}
+          <input
+            value={title}
+            onChange={e => setTitle(e.target.value)}
+          />
+          {errors.title && (
+            <p className="error-text">{errors.title}</p>
+          )}
         </div>
 
-        {/* COURSE */}
         <div className="form-group">
           <label>Course</label>
-          <select value={courseId} onChange={e => setCourseId(e.target.value)}>
+          <select
+            value={courseId}
+            onChange={e => setCourseId(e.target.value)}
+          >
             <option value="">Select Course</option>
             {courses.map(c => (
-              <option key={c._id} value={c._id}>{c.name}</option>
+              <option key={c._id} value={c._id}>
+                {c.name}
+              </option>
             ))}
           </select>
-          {errors.courseId && <p className="error-text">{errors.courseId}</p>}
+          {errors.courseId && (
+            <p className="error-text">{errors.courseId}</p>
+          )}
         </div>
 
-        {/* CATEGORY */}
         <div className="form-group">
           <label>Category</label>
           <select
@@ -249,125 +258,162 @@ export default function QuestionUploadPage() {
           >
             <option value="">Select Category</option>
             {categories.map(cat => (
-              <option key={cat._id} value={cat._id}>{cat.name}</option>
+              <option key={cat._id} value={cat._id}>
+                {cat.name}
+              </option>
             ))}
           </select>
-          {errors.categoryId && <p className="error-text">{errors.categoryId}</p>}
+          {errors.categoryId && (
+            <p className="error-text">{errors.categoryId}</p>
+          )}
         </div>
 
-        {/* DIFFICULTY */}
         <div className="form-group">
           <label>Difficulty</label>
-          <select value={difficulty} onChange={e => setDifficulty(e.target.value)}>
+          <select
+            value={difficulty}
+            onChange={e => setDifficulty(e.target.value)}
+          >
             <option>Easy</option>
             <option>Medium</option>
             <option>Hard</option>
           </select>
         </div>
 
-        {/* DESCRIPTION */}
         <div className="form-group">
           <label>Description</label>
           <div ref={quillContainerRef} className="quill-box" />
-          {errors.description && <p className="error-text">{errors.description}</p>}
+          {errors.description && (
+            <p className="error-text">{errors.description}</p>
+          )}
         </div>
 
-        {/* ⭐ PREDEFINED TOGGLE */}
-        <div className="form-group checkbox-row">
-          <input
-            type="checkbox"
-            checked={isPredefinedOnly}
-            onChange={e => setIsPredefinedOnly(e.target.checked)}
-          />
-          <label>Use predefined starter code</label>
-        </div>
-
-        {/* ⭐ PREDEFINED CODE INPUTS */}
-        {isPredefinedOnly && (
-          <div className="predefined-section">
-            <h4>Predefined Code</h4>
-            {predefinedCode.map(p => (
-              <div className="form-group" key={p.language}>
-                <label>{p.language.toUpperCase()}</label>
-                <textarea
-                  rows={6}
-                  value={p.code}
-                  placeholder="// WRITE YOUR CODE HERE"
-                  onChange={e => updatePredefined(p.language, e.target.value)}
-                />
-              </div>
-            ))}
-            {errors.predefinedCode && (
-              <p className="error-text">{errors.predefinedCode}</p>
-            )}
-          </div>
-        )}
-
-        {/* SAMPLE TESTCASES */}
         <div className="section-title">Sample Testcases</div>
         {sampleTestcases.map((t, i) => (
           <div className="testcase-row" key={i}>
             <textarea
               placeholder="Input"
               value={t.input}
-              onChange={e => update(sampleTestcases, setSampleTestcases, i, "input", e.target.value)}
+              onChange={e =>
+                update(
+                  sampleTestcases,
+                  setSampleTestcases,
+                  i,
+                  "input",
+                  e.target.value
+                )
+              }
             />
             <textarea
               placeholder="Output"
               value={t.output}
-              onChange={e => update(sampleTestcases, setSampleTestcases, i, "output", e.target.value)}
+              onChange={e =>
+                update(
+                  sampleTestcases,
+                  setSampleTestcases,
+                  i,
+                  "output",
+                  e.target.value
+                )
+              }
             />
           </div>
         ))}
-        {errors.sampleTestcases && <p className="error-text">{errors.sampleTestcases}</p>}
+        {errors.sampleTestcases && (
+          <p className="error-text">
+            {errors.sampleTestcases}
+          </p>
+        )}
 
-        <button className="link-btn" onClick={() =>
-          setSampleTestcases([...sampleTestcases, { input: "", output: "" }])
-        }>
+        <button
+          className="link-btn"
+          onClick={() =>
+            setSampleTestcases([
+              ...sampleTestcases,
+              { input: "", output: "" }
+            ])
+          }
+        >
           Add Sample Testcase
         </button>
 
-        {/* HIDDEN TESTCASES */}
         <div className="section-title">Hidden Testcases</div>
         {hiddenTestcases.map((t, i) => (
           <div className="testcase-row" key={i}>
             <textarea
               placeholder="Input"
               value={t.input}
-              onChange={e => update(hiddenTestcases, setHiddenTestcases, i, "input", e.target.value)}
+              onChange={e =>
+                update(
+                  hiddenTestcases,
+                  setHiddenTestcases,
+                  i,
+                  "input",
+                  e.target.value
+                )
+              }
             />
             <textarea
               placeholder="Output"
               value={t.output}
-              onChange={e => update(hiddenTestcases, setHiddenTestcases, i, "output", e.target.value)}
+              onChange={e =>
+                update(
+                  hiddenTestcases,
+                  setHiddenTestcases,
+                  i,
+                  "output",
+                  e.target.value
+                )
+              }
             />
           </div>
         ))}
-        {errors.hiddenTestcases && <p className="error-text">{errors.hiddenTestcases}</p>}
+        {errors.hiddenTestcases && (
+          <p className="error-text">
+            {errors.hiddenTestcases}
+          </p>
+        )}
 
-        <button className="link-btn" onClick={() =>
-          setHiddenTestcases([...hiddenTestcases, { input: "", output: "" }])
-        }>
+        <button
+          className="link-btn"
+          onClick={() =>
+            setHiddenTestcases([
+              ...hiddenTestcases,
+              { input: "", output: "" }
+            ])
+          }
+        >
           Add Hidden Testcase
         </button>
 
-        {/* SUBMIT */}
         <div className="footer">
-          <button className="primary-btn" onClick={submit} disabled={loading}>
+          <button
+            className="primary-btn"
+            onClick={submit}
+            disabled={loading}
+          >
             {loading
-              ? (questionId ? "Updating..." : "Publishing...")
-              : (questionId ? "Update Question" : "Publish Question")}
+              ? questionId
+                ? "Updating..."
+                : "Publishing..."
+              : questionId
+              ? "Update Question"
+              : "Publish Question"}
           </button>
         </div>
       </div>
 
-      {/* SUCCESS POPUP */}
       {showPopup && (
         <div className="popup-overlay">
           <div className="popup-card">
-            <h3>✅ Question {questionId ? "Updated" : "Created"}</h3>
+            <h3>
+              ✅ Question {questionId ? "Updated" : "Created"}
+            </h3>
             <p>Your question has been successfully saved.</p>
-            <button className="primary-btn" onClick={() => setShowPopup(false)}>
+            <button
+              className="primary-btn"
+              onClick={() => setShowPopup(false)}
+            >
               OK
             </button>
           </div>

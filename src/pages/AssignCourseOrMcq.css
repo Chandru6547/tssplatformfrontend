@@ -25,7 +25,7 @@
   gap: 14px;
 }
 
-/* ---------- SELECT & INPUT ---------- */
+/* ---------- SELECT ---------- */
 .student-form select {
   width: 100%;
   padding: 11px 12px;
@@ -76,17 +76,53 @@
   cursor: not-allowed;
 }
 
+/* ---------- BATCH CHECKBOX SECTION ---------- */
+.batch-checkbox-group {
+  border: 1px solid #d1d5db;
+  border-radius: 10px;
+  padding: 12px 14px;
+  background: #f9fafb;
+}
+
+/* Label */
+.batch-checkbox-group .label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #111827;
+  margin-bottom: 10px;
+}
+
+/* Checkbox row */
+.batch-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 2px;
+  font-size: 14px;
+  color: #1f2937;
+  cursor: pointer;
+}
+
+/* Checkbox input */
+.batch-checkbox input {
+  width: 16px;
+  height: 16px;
+  accent-color: #6366f1;
+  cursor: pointer;
+}
+
+/* Hover effect */
+.batch-checkbox:hover {
+  color: #4f46e5;
+}
+
 /* ---------- STATUS MESSAGE ---------- */
 .message {
   margin-top: 18px;
   text-align: center;
   font-size: 14px;
   font-weight: 600;
-}
-
-/* Success */
-.message::before {
-  content: "";
+  color: #065f46;
 }
 
 /* ---------- RESPONSIVE ---------- */
@@ -96,3 +132,4 @@
     padding: 24px;
   }
 }
+ 

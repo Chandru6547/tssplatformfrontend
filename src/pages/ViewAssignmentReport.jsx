@@ -73,7 +73,7 @@ export default function ViewAssignmentReport() {
     if (!showAnalysis || !submissions.length) return;
 
     const distribution = {};
-    let totalSolved;
+    let totalSolved = 0;
 
     submissions.forEach(s => {
       distribution[s.problemsSolved] =

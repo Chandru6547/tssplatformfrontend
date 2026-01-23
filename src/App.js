@@ -40,6 +40,8 @@ import ViewAssignmentReport from "./pages/ViewAssignmentReport";
 import ViewMcqsAnswer from "./pages/ViewMcqsAnswer";
 import MCQCategoryPage from "./pages/MCQCategoryPage";
 import MCQListByCategory from "./pages/MCQListByCategory";
+import ForgotPasswordPage from "./pages/ForgotPasswordPage";
+import ResetPasswordPage from "./pages/ResetPasswordPage";
 import "./App.css";
 
 export default function App() {
@@ -202,6 +204,8 @@ export default function App() {
               <Route path="*" element={<Navigate to="/" />} />
               <Route path="/mcqs-list-all" element={<MCQCategoryPage />} />
               <Route path="/mcqs/category/:category" element={<MCQListByCategory />} /> 
+              <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+              <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
               <Route
                 path="/assignments/viewall"
                 element={
