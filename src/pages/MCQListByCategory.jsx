@@ -27,6 +27,32 @@ export default function MCQListByCategory() {
   const [assignMessage, setAssignMessage] = useState("");
 
   useEffect(() => {
+    const fetchMCQs = async () => {
+      try {
+        const res = await fetch(
+          `${API_BASE}/getAllMCQForAdmin`,
+          {
+            headers: {
+              Authorization: `Bearer ${getToken()}`
+            }
+          }
+        );
+
+        if (!res.ok) throw new Error("Failed");
+
+        const data = await res.json();
+        const filtered = data.filter(
+          (mcq) => mcq.category === category
+        );
+
+        setMcqs(filtered);
+      } catch {
+        setError("Unable to load MCQs");
+      } finally {
+        setLoading(false);
+      }
+    };
+
     fetchMCQs();
   }, [category]);
 
@@ -81,32 +107,6 @@ export default function MCQListByCategory() {
       .then(setStudents)
       .catch(() => setStudents([]));
   }, [campus, year, batch]);
-
-  const fetchMCQs = async () => {
-    try {
-      const res = await fetch(
-        `${API_BASE}/getAllMCQForAdmin`,
-        {
-          headers: {
-            Authorization: `Bearer ${getToken()}`
-          }
-        }
-      );
-
-      if (!res.ok) throw new Error("Failed");
-
-      const data = await res.json();
-      const filtered = data.filter(
-        (mcq) => mcq.category === category
-      );
-
-      setMcqs(filtered);
-    } catch {
-      setError("Unable to load MCQs");
-    } finally {
-      setLoading(false);
-    }
-  };
 
   /* ---------- HANDLE ASSIGN MCQ ---------- */
   const handleAssignMcq = async () => {

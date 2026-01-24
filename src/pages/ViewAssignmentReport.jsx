@@ -73,12 +73,10 @@ export default function ViewAssignmentReport() {
     if (!showAnalysis || !submissions.length) return;
 
     const distribution = {};
-    let totalSolved = 0;
 
     submissions.forEach(s => {
       distribution[s.problemsSolved] =
         (distribution[s.problemsSolved] || 0) + 1;
-      totalSolved += s.problemsSolved;
     });
 
     // const avgSolved = totalSolved / submissions.length;
