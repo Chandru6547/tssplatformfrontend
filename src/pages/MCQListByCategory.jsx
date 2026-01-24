@@ -16,42 +16,39 @@ export default function MCQListByCategory() {
   /* ---------- ASSIGN MODAL STATE ---------- */
   const [showAssignModal, setShowAssignModal] = useState(false);
   const [selectedMcq, setSelectedMcq] = useState(null);
+
   const [campuses, setCampuses] = useState([]);
   const [years, setYears] = useState([]);
   const [batches, setBatches] = useState([]);
+
   const [campus, setCampus] = useState("");
   const [year, setYear] = useState("");
-  const [batch, setBatch] = useState("");
+
+  /* ✅ MULTI BATCH (CHECKBOX) */
+  const [batchesSelected, setBatchesSelected] = useState([]);
+
   const [students, setStudents] = useState([]);
   const [assignLoading, setAssignLoading] = useState(false);
   const [assignMessage, setAssignMessage] = useState("");
 
+  /* ---------- FETCH MCQS ---------- */
   useEffect(() => {
-    const fetchMCQs = async () => {
+    async function fetchMCQs() {
       try {
-        const res = await fetch(
-          `${API_BASE}/getAllMCQForAdmin`,
-          {
-            headers: {
-              Authorization: `Bearer ${getToken()}`
-            }
-          }
-        );
+        const res = await fetch(`${API_BASE}/getAllMCQForAdmin`, {
+          headers: { Authorization: `Bearer ${getToken()}` }
+        });
 
         if (!res.ok) throw new Error("Failed");
 
         const data = await res.json();
-        const filtered = data.filter(
-          (mcq) => mcq.category === category
-        );
-
-        setMcqs(filtered);
+        setMcqs(data.filter(mcq => mcq.category === category));
       } catch {
         setError("Unable to load MCQs");
       } finally {
         setLoading(false);
       }
-    };
+    }
 
     fetchMCQs();
   }, [category]);
@@ -72,9 +69,9 @@ export default function MCQListByCategory() {
       .then(res => res.json())
       .then(data => {
         setYears(data);
-        setBatches([]);
         setYear("");
-        setBatch("");
+        setBatches([]);
+        setBatchesSelected([]);
       });
   }, [campus]);
 
@@ -90,33 +87,52 @@ export default function MCQListByCategory() {
       .then(res => res.json())
       .then(data => {
         setBatches(data);
-        setBatch("");
+        setBatchesSelected([]);
       });
   }, [campus, year]);
 
-  /* ---------- FETCH STUDENTS ---------- */
+  /* ---------- FETCH STUDENTS (MULTI BATCH) ---------- */
   useEffect(() => {
-    if (!campus || !year || !batch) return;
-
-    fetch(
-      `${API_BASE}/api/students/students?college=${encodeURIComponent(
-        campus
-      )}&year=${year}&batch=${batch}`
-    )
-      .then(res => res.json())
-      .then(setStudents)
-      .catch(() => setStudents([]));
-  }, [campus, year, batch]);
-
-  /* ---------- HANDLE ASSIGN MCQ ---------- */
-  const handleAssignMcq = async () => {
-    if (!selectedMcq) {
-      setAssignMessage("❌ No MCQ selected");
+    if (!campus || !year || batchesSelected.length === 0) {
+      setStudents([]);
       return;
     }
 
+    async function fetchStudents() {
+      const allStudents = [];
+      const emailSet = new Set();
+
+      for (const batch of batchesSelected) {
+        try {
+          const res = await fetch(
+            `${API_BASE}/api/students/students?college=${encodeURIComponent(
+              campus
+            )}&year=${year}&batch=${batch}`
+          );
+
+          const data = await res.json();
+
+          data.forEach(s => {
+            if (!emailSet.has(s.email)) {
+              emailSet.add(s.email);
+              allStudents.push(s);
+            }
+          });
+        } catch {}
+      }
+
+      setStudents(allStudents);
+    }
+
+    fetchStudents();
+  }, [campus, year, batchesSelected]);
+
+  /* ---------- HANDLE ASSIGN ---------- */
+  const handleAssignMcq = async () => {
+    if (!selectedMcq) return;
+
     if (students.length === 0) {
-      setAssignMessage("❌ No students found in this batch");
+      setAssignMessage("❌ No students found");
       return;
     }
 
@@ -131,33 +147,36 @@ export default function MCQListByCategory() {
         await fetch(`${API_BASE}/addMcq`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email: student.email, mcq: selectedMcq._id })
+          body: JSON.stringify({
+            email: student.email,
+            mcq: selectedMcq._id
+          })
         });
         success++;
-      } catch (err) {
-        console.error("Assignment failed for", student.email);
+      } catch {
         failed++;
       }
     }
 
-    setAssignMessage(`✅ Assigned successfully! Success: ${success}, Failed: ${failed}`);
+    setAssignMessage(`✅ Assigned: ${success}, ❌ Failed: ${failed}`);
     setAssignLoading(false);
 
     setTimeout(() => {
       setShowAssignModal(false);
       setCampus("");
       setYear("");
-      setBatch("");
+      setBatchesSelected([]);
       setStudents([]);
       setAssignMessage("");
     }, 2000);
   };
 
-  /* ---------- OPEN ASSIGN MODAL ---------- */
-  const openAssignModal = (mcq) => {
-    setSelectedMcq(mcq);
-    setShowAssignModal(true);
-    setAssignMessage("");
+  const toggleBatch = (batch) => {
+    setBatchesSelected(prev =>
+      prev.includes(batch)
+        ? prev.filter(b => b !== batch)
+        : [...prev, batch]
+    );
   };
 
   if (loading) return <div className="page-loader">Loading MCQs...</div>;
@@ -166,59 +185,38 @@ export default function MCQListByCategory() {
   return (
     <div className="mcq-page">
       <h1 className="mcq-title">{category} MCQs</h1>
-      <p className="mcq-subtitle">
-        Select a test to begin
-      </p>
 
-      {mcqs.length === 0 ? (
-        <p className="empty-text">No MCQs available</p>
-      ) : (
-        <div className="mcq-grid">
-          {mcqs.map((mcq) => (
-            <div
-              key={mcq._id}
-              className="mcq-card test-card"
-            >
-              <h2>{mcq.topic}</h2>
+      <div className="mcq-grid">
+        {mcqs.map(mcq => (
+          <div key={mcq._id} className="mcq-card test-card">
+            <h2>{mcq.topic}</h2>
+            <p className="category">📂 {mcq.category}</p>
 
-              <p className="category">
-                📂 {mcq.category}
-              </p>
-
-              <div className="mcq-meta">
-                <span>❓ {mcq.questions.length} Questions</span>
-                <span>
-                  🕒 {new Date(mcq.createdAt).toLocaleDateString("en-IN")}
-                </span>
-              </div>
-
-              <div className="mcq-card-actions">
-                <button 
-                  className="btn-view"
-                  onClick={() => navigate(`/mcqs/${mcq._id}`)}
-                >
-                  View
-                </button>
-                <button 
-                  className="btn-assign"
-                  onClick={() => openAssignModal(mcq)}
-                >
-                  📤 Assign
-                </button>
-              </div>
+            <div className="mcq-meta">
+              <span>❓ {mcq.questions.length} Questions</span>
+              <span>🕒 {new Date(mcq.createdAt).toLocaleDateString("en-IN")}</span>
             </div>
-          ))}
-        </div>
-      )}
+
+            <div className="mcq-card-actions">
+              <button onClick={() => navigate(`/mcqs/${mcq._id}`)}>View</button>
+              <button onClick={() => {
+                setSelectedMcq(mcq);
+                setShowAssignModal(true);
+              }}>
+                📤 Assign
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
 
       {/* ================= ASSIGN MODAL ================= */}
       {showAssignModal && (
         <div className="assign-modal-overlay" onClick={() => setShowAssignModal(false)}>
           <div className="assign-modal" onClick={e => e.stopPropagation()}>
             <h2>Assign MCQ: {selectedMcq?.topic}</h2>
-            
+
             <div className="assign-form">
-              {/* CAMPUS */}
               <div className="form-group">
                 <label>College</label>
                 <select value={campus} onChange={e => setCampus(e.target.value)}>
@@ -231,7 +229,6 @@ export default function MCQListByCategory() {
                 </select>
               </div>
 
-              {/* YEAR */}
               <div className="form-group">
                 <label>Year</label>
                 <select value={year} onChange={e => setYear(e.target.value)} disabled={!campus}>
@@ -244,48 +241,44 @@ export default function MCQListByCategory() {
                 </select>
               </div>
 
-              {/* BATCH */}
+              {/* ✅ CHECKBOX BATCH SELECTION */}
               <div className="form-group">
                 <label>Batch</label>
-                <select value={batch} onChange={e => setBatch(e.target.value)} disabled={!year}>
-                  <option value="">Select Batch</option>
-                  {batches.map(b => (
-                    <option key={b._id} value={b.Batchname || b.batch}>
-                      {b.Batchname || b.batch}
-                    </option>
-                  ))}
-                </select>
+                {batches.map(b => {
+                  const batchName = b.Batchname || b.batch;
+                  return (
+                    <label key={b._id} style={{ display: "block", marginBottom: 6 }}>
+                      <input
+                        type="checkbox"
+                        checked={batchesSelected.includes(batchName)}
+                        onChange={() => toggleBatch(batchName)}
+                      />{" "}
+                      {batchName}
+                    </label>
+                  );
+                })}
               </div>
 
-              {/* STUDENTS COUNT */}
               {students.length > 0 && (
                 <div className="students-info">
-                  <span>👥 {students.length} students will receive this MCQ</span>
+                  👥 {students.length} students will receive this MCQ
                 </div>
               )}
 
-              {/* ACTION BUTTONS */}
               <div className="modal-actions">
-                <button 
+                <button
                   className="btn-assign-submit"
                   onClick={handleAssignMcq}
-                  disabled={assignLoading || students.length === 0 || !batch}
+                  disabled={assignLoading || batchesSelected.length === 0}
                 >
                   {assignLoading ? "Assigning..." : "✓ Assign to Batch"}
                 </button>
-                <button 
-                  className="btn-cancel"
-                  onClick={() => setShowAssignModal(false)}
-                  disabled={assignLoading}
-                >
+                <button className="btn-cancel" onClick={() => setShowAssignModal(false)}>
                   Cancel
                 </button>
               </div>
 
-              {/* MESSAGE */}
-              {assignMessage && (
-                <p className="assign-message">{assignMessage}</p>
-              )}
+              {assignMessage && <p className="assign-message">{assignMessage}</p>}
             </div>
           </div>
         </div>
