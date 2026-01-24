@@ -9,7 +9,7 @@ export default function DashboardPage() {
       <h1 className="dashboard-title">Student Dashboard</h1>
 
       <div className="dashboard-cards">
-        {/* ASSIGNMENTS */}
+        {/* ASSIGNMENTS
         <div
           className="dashboard-card"
           onClick={() => navigate("/assignments-library")}
@@ -20,14 +20,14 @@ export default function DashboardPage() {
         </div>
 
         {/* COURSES */}
-        <div
+        {/* <div
           className="dashboard-card"
           onClick={() => navigate("/courses-library")}
         >
           <div className="card-icon">🎓</div>
           <h2>Courses</h2>
           <p>Access structured learning courses</p>
-        </div>
+        </div> */} 
 
         {/* MCQS */}
         <div

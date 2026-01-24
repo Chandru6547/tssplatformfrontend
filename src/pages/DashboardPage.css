@@ -26,6 +26,7 @@
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
   cursor: pointer;
   transition: all 0.3s ease;
+  width: fit-content;
   text-align: center;
 }
 
@@ -43,6 +44,8 @@
   font-size: 20px;
   margin-bottom: 8px;
   color: #111;
+  width: fit-content;
+  max-width: 30%;
 }
 
 .dashboard-card p {

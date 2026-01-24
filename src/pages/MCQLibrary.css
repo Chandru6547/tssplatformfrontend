@@ -332,3 +332,47 @@
   height: 16px;
   cursor: pointer;
 }
+
+/* ---------- VIEW MCQ MODAL ---------- */
+.view-mcq-modal {
+  width: 720px;
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.view-mcq-body {
+  margin-top: 12px;
+  padding-right: 6px;
+  overflow-y: auto;
+  max-height: 65vh;
+}
+
+.mcq-question-card {
+  background: #f9fafb;
+  border-radius: 10px;
+  padding: 14px 16px;
+  margin-bottom: 14px;
+}
+
+.mcq-question-card h4 {
+  font-size: 15px;
+  margin-bottom: 8px;
+}
+
+.mcq-options {
+  list-style: none;
+  padding-left: 0;
+  margin-bottom: 6px;
+}
+
+.mcq-options li {
+  font-size: 14px;
+  padding: 4px 0;
+}
+
+.mcq-answer {
+  font-size: 13px;
+  font-weight: 600;
+  color: #16a34a;
+}

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { getToken } from "../utils/auth";
 import "./MCQLibrary.css";
 
@@ -7,7 +7,7 @@ const API_BASE = process.env.REACT_APP_API_BASE_URL;
 
 export default function MCQListByCategory() {
   const { category } = useParams();
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
 
   const [mcqs, setMcqs] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -24,12 +24,15 @@ export default function MCQListByCategory() {
   const [campus, setCampus] = useState("");
   const [year, setYear] = useState("");
 
-  /* ✅ MULTI BATCH (CHECKBOX) */
   const [batchesSelected, setBatchesSelected] = useState([]);
 
   const [students, setStudents] = useState([]);
   const [assignLoading, setAssignLoading] = useState(false);
   const [assignMessage, setAssignMessage] = useState("");
+
+  /* ---------- VIEW MCQ MODAL ---------- */
+  const [showViewModal, setShowViewModal] = useState(false);
+  const [viewMcq, setViewMcq] = useState(null);
 
   /* ---------- FETCH MCQS ---------- */
   useEffect(() => {
@@ -129,12 +132,7 @@ export default function MCQListByCategory() {
 
   /* ---------- HANDLE ASSIGN ---------- */
   const handleAssignMcq = async () => {
-    if (!selectedMcq) return;
-
-    if (students.length === 0) {
-      setAssignMessage("❌ No students found");
-      return;
-    }
+    if (!selectedMcq || students.length === 0) return;
 
     setAssignLoading(true);
     setAssignMessage(`Assigning to ${students.length} students...`);
@@ -198,11 +196,21 @@ export default function MCQListByCategory() {
             </div>
 
             <div className="mcq-card-actions">
-              <button onClick={() => navigate(`/mcqs/${mcq._id}`)}>View</button>
-              <button onClick={() => {
-                setSelectedMcq(mcq);
-                setShowAssignModal(true);
-              }}>
+              <button
+                onClick={() => {
+                  setViewMcq(mcq);
+                  setShowViewModal(true);
+                }}
+              >
+                View
+              </button>
+
+              <button
+                onClick={() => {
+                  setSelectedMcq(mcq);
+                  setShowAssignModal(true);
+                }}
+              >
                 📤 Assign
               </button>
             </div>
@@ -241,18 +249,17 @@ export default function MCQListByCategory() {
                 </select>
               </div>
 
-              {/* ✅ CHECKBOX BATCH SELECTION */}
               <div className="form-group">
                 <label>Batch</label>
                 {batches.map(b => {
                   const batchName = b.Batchname || b.batch;
                   return (
-                    <label key={b._id} style={{ display: "block", marginBottom: 6 }}>
+                    <label key={b._id} style={{ display: "flex", gap: 8, marginBottom: 6 }}>
                       <input
                         type="checkbox"
                         checked={batchesSelected.includes(batchName)}
                         onChange={() => toggleBatch(batchName)}
-                      />{" "}
+                      />
                       {batchName}
                     </label>
                   );
@@ -279,6 +286,43 @@ export default function MCQListByCategory() {
               </div>
 
               {assignMessage && <p className="assign-message">{assignMessage}</p>}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ================= VIEW MCQ MODAL ================= */}
+      {showViewModal && viewMcq && (
+        <div className="assign-modal-overlay" onClick={() => setShowViewModal(false)}>
+          <div
+            className="assign-modal view-mcq-modal"
+            onClick={e => e.stopPropagation()}
+          >
+            <h2>{viewMcq.topic} – Questions</h2>
+
+            <div className="view-mcq-body">
+              {viewMcq.questions.map((q, index) => (
+                <div key={q._id} className="mcq-question-card">
+                  <h4>Q{index + 1}. {q.question}</h4>
+
+                  <ul className="mcq-options">
+                    <li>A. {q.optionA}</li>
+                    <li>B. {q.optionB}</li>
+                    <li>C. {q.optionC}</li>
+                    <li>D. {q.optionD}</li>
+                  </ul>
+
+                  <p className="mcq-answer">
+                    ✅ Correct Answer: {q.correctOption}
+                  </p>
+                </div>
+              ))}
+            </div>
+
+            <div className="modal-actions">
+              <button className="btn-cancel" onClick={() => setShowViewModal(false)}>
+                Close
+              </button>
             </div>
           </div>
         </div>
