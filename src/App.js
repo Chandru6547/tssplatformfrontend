@@ -207,10 +207,10 @@ export default function App() {
               <Route path="/forgot-password" element={<ForgotPasswordPage />} />
               <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
               <Route
-                path="/assignments/viewall"
+                path="/assignments/viewall" 
                 element={
                   <ProtectedRoute>
-                    <AssignmentListPage />
+                    <AssignmentListPage /> 
                   </ProtectedRoute>
                 }
               />
