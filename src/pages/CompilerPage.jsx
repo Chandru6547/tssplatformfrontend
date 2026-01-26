@@ -45,7 +45,6 @@ export default function CompilerPage() {
   const [testcases, setTestcases] = useState([{ input: "", output: "" }]);
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [expandedWarning, setExpandedWarning] = useState(null);
 
   const resultRef = useRef(null);
 
