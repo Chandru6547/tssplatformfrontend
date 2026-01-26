@@ -7,6 +7,7 @@ export default function MCQCreatePage() {
   const [topic, setTopic] = useState("");
   const [category, setCategory] = useState("");
   const [loading, setLoading] = useState(false);
+  const [duration, setDuration] = useState(30);
 
   const [questions, setQuestions] = useState([
     {
@@ -100,7 +101,7 @@ export default function MCQCreatePage() {
   const handleSubmit = async () => {
     try {
       setLoading(true);
-      await createMCQ({ topic, category, questions });
+      await createMCQ({ topic, category, questions, duration: Number(duration) });
 
       alert("MCQ created successfully 🎉");
 
@@ -145,6 +146,14 @@ export default function MCQCreatePage() {
             placeholder="e.g. DSA"
             value={category}
             onChange={e => setCategory(e.target.value)}
+          />
+        </div>
+        <div className="field">
+          <label>Duration (minutes)</label>
+          <input
+            placeholder="30 (in minutes)"
+            value={duration}
+            onChange={e => setDuration(e.target.value)}
           />
         </div>
       </div>

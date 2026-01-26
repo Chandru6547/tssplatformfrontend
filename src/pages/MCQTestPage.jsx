@@ -25,6 +25,8 @@ export default function MCQTestPage() {
   const [showResult, setShowResult] = useState(false);
   const [score, setScore] = useState(0);
   const [submitting, setSubmitting] = useState(false);
+  const [totalTimeLeft, setTotalTimeLeft] = useState(0);
+  const totalTimerRef = useRef(null);
 
   /* CAMERA */
   const videoRef = useRef(null);
@@ -38,6 +40,71 @@ export default function MCQTestPage() {
   /* ================= STORAGE KEYS (UPDATED) ================= */
   const STORAGE_KEY = useRef(`mcq_${mcqId}_${userId}_answers`).current;
   const ORDER_KEY = useRef(`mcq_${mcqId}_${userId}_order`).current;
+
+    const submitTest = useCallback(async (forced = false) => {
+    if (submitting) return;
+    setSubmitting(true);
+
+    try {
+      const payload = mcq.questions.map(q => ({
+        questionId: q._id,
+        selectedOption: answers[q._id] || null
+      }));
+
+      const res = await fetch(
+        `${process.env.REACT_APP_API_BASE_URL}/api/mcq-submissions/submit`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${getToken()}`
+          },
+          body: JSON.stringify({
+            mcqId,
+            studentId: userId,
+            answers: payload,
+            forcedSubmit: forced
+          })
+        }
+      );
+
+      const data = await res.json();
+      setScore(data?.submission?.score ?? data?.score ?? 0);
+      setShowResult(true);
+
+      /* ---------- CLEANUP (ADDED) ---------- */
+      localStorage.removeItem(STORAGE_KEY);
+      localStorage.removeItem(ORDER_KEY);
+    } finally {
+      stopCameraMic();
+      exitFullscreenSafely();
+    }
+  }, [mcqId, userId, answers, mcq, submitting, STORAGE_KEY, ORDER_KEY]);
+
+  /* ---------- TOTAL TEST TIMER ---------- */
+  useEffect(() => {
+    if (!started || showResult || !mcq) return;
+
+    if (totalTimeLeft === 0) {
+      setTotalTimeLeft(mcq.duration * 60);
+      return;
+    }
+
+    totalTimerRef.current = setInterval(() => {
+      setTotalTimeLeft(prev => {
+        if (prev <= 1) {
+          clearInterval(totalTimerRef.current);
+          submitTest(true);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => {
+      if (totalTimerRef.current) clearInterval(totalTimerRef.current);
+    };
+  }, [started, showResult, totalTimeLeft, mcq, submitTest]);
 
   /* ---------- FULLSCREEN ---------- */
   const enterFullscreen = async () => {
@@ -107,45 +174,7 @@ export default function MCQTestPage() {
   };
 
   /* ---------- SUBMIT TEST ---------- */
-  const submitTest = useCallback(async (forced = false) => {
-    if (submitting) return;
-    setSubmitting(true);
 
-    try {
-      const payload = mcq.questions.map(q => ({
-        questionId: q._id,
-        selectedOption: answers[q._id] || null
-      }));
-
-      const res = await fetch(
-        `${process.env.REACT_APP_API_BASE_URL}/api/mcq-submissions/submit`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${getToken()}`
-          },
-          body: JSON.stringify({
-            mcqId,
-            studentId: userId,
-            answers: payload,
-            forcedSubmit: forced
-          })
-        }
-      );
-
-      const data = await res.json();
-      setScore(data?.submission?.score ?? data?.score ?? 0);
-      setShowResult(true);
-
-      /* ---------- CLEANUP (ADDED) ---------- */
-      localStorage.removeItem(STORAGE_KEY);
-      localStorage.removeItem(ORDER_KEY);
-    } finally {
-      stopCameraMic();
-      exitFullscreenSafely();
-    }
-  }, [mcqId, userId, answers, mcq, submitting, STORAGE_KEY, ORDER_KEY]);
 
   /* ================= FETCH MCQ + SHUFFLE (UPDATED) ================= */
   useEffect(() => {
@@ -256,6 +285,7 @@ export default function MCQTestPage() {
           <li>Fullscreen mandatory</li>
           <li>Camera & microphone ON</li>
           <li>Tab switching monitored</li>
+          <li>⏱️ Total Duration: {mcq.duration} minutes</li>
         </ul>
         <button className="start-btn" onClick={startTest}>
           Start Test
@@ -276,6 +306,18 @@ export default function MCQTestPage() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
   };
 
+  /* ---------- FORMAT TIME HELPER ---------- */
+  const formatTime = (seconds) => {
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    const secs = seconds % 60;
+    
+    if (hours > 0) {
+      return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+    }
+    return `${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+  };
+
 
 
   return (
@@ -291,6 +333,9 @@ export default function MCQTestPage() {
       <div className={`exam-wrapper ${showResult ? "blur" : ""}`}>
         <div className="progress-bar">
           <div style={{ width: `${progress}%` }} />
+        </div>
+        <div className="total-time-header">
+          <span>Total Time: <strong>{formatTime(totalTimeLeft)}</strong></span>
         </div>
 
         <div className="exam-container">

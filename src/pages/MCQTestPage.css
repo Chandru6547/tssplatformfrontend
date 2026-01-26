@@ -21,6 +21,23 @@
   transition: width 0.4s ease;
 }
 
+/* ---------- TOTAL TIME HEADER ---------- */
+.total-time-header {
+  padding: 12px 20px;
+  background: linear-gradient(135deg, #fef3c7, #fef08a);
+  border-bottom: 2px solid #f59e0b;
+  text-align: center;
+  font-size: 16px;
+  font-weight: 600;
+  color: #92400e;
+}
+
+.total-time-header strong {
+  color: #dc2626;
+  font-size: 18px;
+  margin-left: 10px;
+}
+
 /* ---------- LAYOUT ---------- */
 .exam-container {
   display: flex;

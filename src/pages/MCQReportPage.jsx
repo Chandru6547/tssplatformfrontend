@@ -11,13 +11,15 @@ export default function MCQReportPage() {
 
   const [mcqs, setMcqs] = useState([]);
   const [report, setReport] = useState([]);
+  const [showAnalysis, setShowAnalysis] = useState(false);
+
+  const [fromMark, setFromMark] = useState("");
+  const [toMark, setToMark] = useState("");
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  /* ---------------------------------------------
-     FETCH ALL MCQs (FOR DROPDOWN)
-  --------------------------------------------- */
+  /* ---------- FETCH MCQS ---------- */
   useEffect(() => {
     if (!college || !year || !batch) {
       navigate("/campuses");
@@ -35,11 +37,9 @@ export default function MCQReportPage() {
           }
         );
 
-        if (!res.ok) throw new Error("Failed to fetch MCQs");
-
+        if (!res.ok) throw new Error();
         setMcqs(await res.json());
-      } catch (err) {
-        console.error(err);
+      } catch {
         setError("Unable to load MCQs");
       } finally {
         setLoading(false);
@@ -49,9 +49,7 @@ export default function MCQReportPage() {
     fetchAllMCQs();
   }, [college, year, batch, navigate]);
 
-  /* ---------------------------------------------
-     DROPDOWN OPTIONS
-  --------------------------------------------- */
+  /* ---------- DROPDOWN ---------- */
   const dropdownOptions = useMemo(() => {
     return mcqs.map(mcq => ({
       label: `${mcq.category} - ${mcq.topic}`,
@@ -59,69 +57,86 @@ export default function MCQReportPage() {
     }));
   }, [mcqs]);
 
-  /* ---------------------------------------------
-     FETCH REPORT
-  --------------------------------------------- */
+  /* ---------- FETCH REPORT ---------- */
   const handleSelectMCQ = async (mcqId) => {
     if (!mcqId) return;
 
     try {
       setLoading(true);
       setReport([]);
+      setFromMark("");
+      setToMark("");
 
       const res = await fetch(
         `${process.env.REACT_APP_API_BASE_URL}/api/mcq-submissions/getreporbytbatch`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            college,
-            year,
-            batch,
-            mcqId
-          })
+          body: JSON.stringify({ college, year, batch, mcqId })
         }
       );
 
-      if (!res.ok) throw new Error("Failed to fetch report");
-
+      if (!res.ok) throw new Error();
       setReport(await res.json());
-    } catch (err) {
-      console.error(err);
+    } catch {
       setError("Unable to load MCQ report");
     } finally {
       setLoading(false);
     }
   };
 
-  /* ---------------------------------------------
-     DOWNLOAD EXCEL
-  --------------------------------------------- */
-  const downloadExcel = () => {
-    if (report.length === 0) return;
+  /* ---------- FILTERED REPORT ---------- */
+  const filteredReport = useMemo(() => {
+    if (!report.length) return [];
 
-    const excelData = report.map((r, i) => ({
+    const from = fromMark === "" ? -Infinity : Number(fromMark);
+    const to = toMark === "" ? Infinity : Number(toMark);
+
+    return report.filter(r => r.score >= from && r.score <= to);
+  }, [report, fromMark, toMark]);
+
+  /* ---------- SCORE DISTRIBUTION ---------- */
+  const scoreDistribution = useMemo(() => {
+    if (!filteredReport.length) return [];
+
+    const total = filteredReport[0]?.totalMarks || 0;
+    const map = {};
+
+    filteredReport.forEach(r => {
+      map[r.score] = (map[r.score] || 0) + 1;
+    });
+
+    return Array.from({ length: total + 1 }, (_, i) => ({
+      score: total - i,
+      count: map[total - i] || 0
+    }));
+  }, [filteredReport]);
+
+  const maxCount = Math.max(...scoreDistribution.map(d => d.count), 1);
+
+  /* ---------- DOWNLOAD EXCEL ---------- */
+  const downloadExcel = () => {
+    if (!filteredReport.length) return;
+
+    const excelData = filteredReport.map((r, i) => ({
       "S.No": i + 1,
       "Student Name": r.student?.name || "Unknown",
       "Email": r.student?.email || "-",
       "Score": r.score,
       "Total Marks": r.totalMarks,
-      "Questions Attempted": r.studentAttemptedCount
+      "Attempted": r.studentAttemptedCount
     }));
 
-    const worksheet = XLSX.utils.json_to_sheet(excelData);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "MCQ Report");
+    const ws = XLSX.utils.json_to_sheet(excelData);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "MCQ Report");
 
-    const topic = report[0]?.mcqTopic || "MCQ_Report";
-    const fileName = `${college}_Year${year}_${batch}_${topic}.xlsx`;
-
-    XLSX.writeFile(workbook, fileName);
+    XLSX.writeFile(
+      wb,
+      `${college}_Year${year}_${batch}_${filteredReport[0]?.mcqTopic}.xlsx`
+    );
   };
 
-  /* ---------------------------------------------
-     UI STATES
-  --------------------------------------------- */
   if (error) return <p className="status error">{error}</p>;
 
   return (
@@ -130,43 +145,61 @@ export default function MCQReportPage() {
       <div className="mcq-header">
         <div>
           <h2>MCQ Report</h2>
-          <p>
-            {college} · Year {year} · Batch {batch}
-          </p>
+          <p>{college} · Year {year} · Batch {batch}</p>
         </div>
 
         <div className="header-actions">
           {report.length > 0 && (
-            <button className="download-btn" onClick={downloadExcel}>
-              ⬇ Download Excel
-            </button>
+            <div className="mark-filter header-filter">
+              <input
+                type="number"
+                placeholder="From"
+                value={fromMark}
+                onChange={e => setFromMark(e.target.value)}
+              />
+              <span>–</span>
+              <input
+                type="number"
+                placeholder="To"
+                value={toMark}
+                onChange={e => setToMark(e.target.value)}
+              />
+            </div>
           )}
+
+          {filteredReport.length > 0 && (
+            <>
+              <button className="analysis-btn" onClick={() => setShowAnalysis(true)}>
+                📊 Analysis
+              </button>
+              <button className="download-btn" onClick={downloadExcel}>
+                ⬇ Download Excel
+              </button>
+            </>
+          )}
+
           <button className="back-btn" onClick={() => navigate(-1)}>
             ← Back
           </button>
         </div>
       </div>
 
-      {/* DROPDOWN */}
+      {/* FILTER BAR */}
       <div className="filter-bar">
         <select defaultValue="" onChange={e => handleSelectMCQ(e.target.value)}>
-          <option value="" disabled>
-            Select Category - Topic
-          </option>
+          <option value="" disabled>Select Category - Topic</option>
           {dropdownOptions.map(opt => (
-            <option key={opt.value} value={opt.value}>
-              {opt.label}
-            </option>
+            <option key={opt.value} value={opt.value}>{opt.label}</option>
           ))}
         </select>
       </div>
 
       {loading && <p className="status">Loading report…</p>}
 
-      {/* REPORT TABLE */}
-      {report.length > 0 && (
+      {/* TABLE */}
+      {filteredReport.length > 0 && (
         <div className="mcq-card">
-          <h4>Topic: {report[0].mcqTopic}</h4>
+          <h4>Topic: {filteredReport[0].mcqTopic}</h4>
 
           <table className="report-table">
             <thead>
@@ -180,7 +213,7 @@ export default function MCQReportPage() {
               </tr>
             </thead>
             <tbody>
-              {report.map((r, i) => (
+              {filteredReport.map((r, i) => (
                 <tr key={r._id}>
                   <td>{i + 1}</td>
                   <td>{r.student?.name || "Unknown"}</td>
@@ -195,8 +228,35 @@ export default function MCQReportPage() {
         </div>
       )}
 
-      {report.length === 0 && !loading && (
-        <p className="status">No submissions found</p>
+      {!loading && report.length > 0 && filteredReport.length === 0 && (
+        <p className="status">No students in selected mark range</p>
+      )}
+
+      {/* ANALYSIS MODAL */}
+      {showAnalysis && (
+        <div className="modal-overlay">
+          <div className="analysis-modal">
+            <div className="modal-header">
+              <h3>Score Analysis</h3>
+              <button onClick={() => setShowAnalysis(false)}>✕</button>
+            </div>
+
+            <div className="modal-body">
+              {scoreDistribution.map(d => (
+                <div key={d.score} className="bar-row">
+                  <span className="bar-label">{d.score}</span>
+                  <div className="bar-track">
+                    <div
+                      className="bar-fill"
+                      style={{ width: `${(d.count / maxCount) * 100}%` }}
+                    />
+                  </div>
+                  <span className="bar-count">{d.count}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
