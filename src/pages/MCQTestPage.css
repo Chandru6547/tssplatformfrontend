@@ -343,3 +343,19 @@
 
 
 
+/* ---------- TOTAL TIME (TOP RIGHT) ---------- */
+.total-time-top-right {
+  position: fixed;
+  top: 14px;
+  right: 20px;
+  z-index: 10000;
+  margin-top: 20px;
+  padding: 10px 18px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #fef3c7, #fde68a);
+  border: 2px solid #f59e0b;
+  font-size: 15px;
+  font-weight: 700;
+  color: #92400e;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+}

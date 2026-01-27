@@ -18,13 +18,11 @@ import {
   FaLifeRing,
   FaClipboardList,
   FaBookReader,
-  FaClipboardCheck 
+  FaClipboardCheck,
 } from "react-icons/fa";
 
-import { getEmail } from "../utils/auth";
-import { logout, isAuthenticated, getRole } from "../utils/auth";
+import { getEmail, logout, isAuthenticated, getRole } from "../utils/auth";
 import "./Navbar.css";
-// import tssLogo from "../assests/tsslogoimg.png";
 
 export default function Navbar() {
   const navigate = useNavigate();
@@ -49,22 +47,34 @@ export default function Navbar() {
 
       {/* ---------- MENU ---------- */}
       <nav className="navbar-menu">
-        {/* IDE */}
-        <Link to="/" className={`nav-item ${isActive("/")}`}>
-          <FaCode />
-          <span>IDE</span>
-        </Link>
-
-        {/* Practice */}
-        <Link to="/courses" className={`nav-item ${isActive("/courses")}`}>
-          <FaBookOpen />
-          <span>Practice</span>
-        </Link>
+        {/* ================= STAFF ================= */}
+        {role === "staff" && (
+          <Link
+            to="/select-assessment"
+            className={`nav-item ${isActive("/select-assessment")}`}
+          >
+            <FaTasks />
+            <span>View Report</span>
+          </Link>
+        )}
 
         {/* ================= STUDENT ================= */}
         {role === "student" && (
           <>
-            <Link to="/mcqs/student" className={`nav-item ${isActive("/mcqs")}`}>
+            <Link to="/" className={`nav-item ${isActive("/")}`}>
+              <FaCode />
+              <span>IDE</span>
+            </Link>
+
+            <Link to="/courses" className={`nav-item ${isActive("/courses")}`}>
+              <FaBookOpen />
+              <span>Practice</span>
+            </Link>
+
+            <Link
+              to="/mcqs/student"
+              className={`nav-item ${isActive("/mcqs")}`}
+            >
               <FaQuestionCircle />
               <span>MCQs</span>
             </Link>
@@ -73,7 +83,7 @@ export default function Navbar() {
               to="/view-mcqs-answer"
               className={`nav-item ${isActive("/view-mcqs-answer")}`}
             >
-              <FaClipboardCheck  />
+              <FaClipboardCheck />
               <span>View MCQs Answer</span>
             </Link>
 
@@ -112,7 +122,6 @@ export default function Navbar() {
               <FaLifeRing />
               <span>Raise a Ticket</span>
             </Link>
-          
 
             <a
               href={`https://workflow.teamtechsign.in?apikey=APIKEY-TSS-STUDENT-TRACKER-9f8a7b6c5d4e?useremail=${getEmail()}`}
@@ -129,6 +138,16 @@ export default function Navbar() {
         {/* ================= ADMIN ================= */}
         {role === "admin" && (
           <>
+            <Link to="/" className={`nav-item ${isActive("/")}`}>
+              <FaCode />
+              <span>IDE</span>
+            </Link>
+
+            <Link to="/courses" className={`nav-item ${isActive("/courses")}`}>
+              <FaBookOpen />
+              <span>Practice</span>
+            </Link>
+
             <Link to="/mcqs" className={`nav-item ${isActive("/mcqs")}`}>
               <FaQuestionCircle />
               <span>MCQs</span>

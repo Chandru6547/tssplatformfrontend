@@ -42,7 +42,22 @@ import MCQCategoryPage from "./pages/MCQCategoryPage";
 import MCQListByCategory from "./pages/MCQListByCategory";
 import ForgotPasswordPage from "./pages/ForgotPasswordPage";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
+import AssignmentDetailPage from "./pages/AssignmentDetailPage";
+import AssessmentSelectPage from "./pages/AssessmentSelectPage";
+import StaffAssignmentList from "./pages/StaffAssignmentList";
+import StaffMCQList from "./pages/StaffMCQList";
+import AssignmentReportPage from "./pages/AssignmentReportPage";
+import MCQReportPageStaff from "./pages/MCQReportPageStaff";
 import "./App.css";
+import { getRole } from "./utils/auth";
+
+function RoleBasedHome() {
+  const role = getRole();
+  if (role === "staff") {
+    return <Navigate to="/select-assessment" replace />;
+  }
+  return <CompilerPage />;
+}
 
 export default function App() {
   const location = useLocation();
@@ -65,8 +80,8 @@ export default function App() {
               <Route
                 path="/"
                 element={
-                  <ProtectedRoute allowedRoles={["admin", "student"]}>
-                    <CompilerPage />
+                  <ProtectedRoute>
+                    <RoleBasedHome />
                   </ProtectedRoute>
                 }
               />
@@ -97,6 +112,7 @@ export default function App() {
                   </ProtectedRoute>
                 }
               />
+              <Route path="/assignments/:id" element={<AssignmentDetailPage />} />
 
               <Route
                 path="/categories/:categoryId"
@@ -206,6 +222,11 @@ export default function App() {
               <Route path="/mcqs/category/:category" element={<MCQListByCategory />} /> 
               <Route path="/forgot-password" element={<ForgotPasswordPage />} />
               <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
+              <Route path="/select-assessment" element={<AssessmentSelectPage />} />
+              <Route path="/staff/assignments" element={<StaffAssignmentList />} />
+              <Route path="/staff/mcqs" element={<StaffMCQList />} />
+              <Route path="/staff/assignment-report" element={<AssignmentReportPage />} />
+              <Route path="/staff/mcq-report" element={<MCQReportPageStaff />} />
               <Route
                 path="/assignments/viewall" 
                 element={

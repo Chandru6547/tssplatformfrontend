@@ -243,7 +243,7 @@ export default function MCQTestPage() {
         setShowTabWarning(true);
       }
 
-      if (tabSwitchCountRef.current >= 3) {
+      if (tabSwitchCountRef.current >= 10000) {
         submitTest(true);
       }
     };
@@ -334,10 +334,9 @@ export default function MCQTestPage() {
         <div className="progress-bar">
           <div style={{ width: `${progress}%` }} />
         </div>
-        <div className="total-time-header">
-          <span>Total Time: <strong>{formatTime(totalTimeLeft)}</strong></span>
+        <div className="total-time-top-right">
+          ⏱️ {formatTime(totalTimeLeft)}
         </div>
-
         <div className="exam-container">
           <div className="question-panel">
             <h2>{question.question}</h2>

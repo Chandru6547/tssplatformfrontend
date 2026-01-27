@@ -1,0 +1,84 @@
+.assignment-report-page {
+  min-height: 100vh;
+  padding: 40px;
+  background: linear-gradient(180deg, #eef2ff, #f8fafc);
+}
+
+.report-header {
+  margin-bottom: 30px;
+}
+
+.report-header h2 {
+  font-size: 28px;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.report-header p {
+  margin-top: 6px;
+  font-size: 15px;
+  color: #64748b;
+}
+
+/* STATES */
+.loading,
+.empty-state {
+  text-align: center;
+  padding: 40px;
+  font-size: 16px;
+  color: #475569;
+}
+
+/* TABLE */
+.table-wrapper {
+  overflow-x: auto;
+  background: #ffffff;
+  border-radius: 14px;
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.08);
+}
+
+.report-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.report-table thead {
+  background: #4f46e5;
+}
+
+.report-table th {
+  text-align: left;
+  padding: 14px 16px;
+  color: #ffffff;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.report-table td {
+  padding: 14px 16px;
+  font-size: 14px;
+  color: #334155;
+}
+
+.report-table tbody tr:nth-child(even) {
+  background: #f8fafc;
+}
+
+.report-table tbody tr:hover {
+  background: #eef2ff;
+}
+
+/* RANK */
+.rank {
+  font-weight: 600;
+  color: #4338ca;
+}
+
+/* SCORE */
+.score {
+  background: #dcfce7;
+  color: #15803d;
+  padding: 4px 10px;
+  border-radius: 10px;
+  font-weight: 500;
+}

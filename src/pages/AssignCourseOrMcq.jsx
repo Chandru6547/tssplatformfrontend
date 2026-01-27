@@ -147,6 +147,7 @@ export default function AssignCourseOrMcq() {
     let endpoint = "";
     let payloadBuilder = null;
 
+    /* ---------- STUDENT ENDPOINTS ---------- */
     if (assignType === "course") {
       endpoint = "/addCourse";
       payloadBuilder = email => ({ email, course: selectedItem });
@@ -162,6 +163,7 @@ export default function AssignCourseOrMcq() {
       payloadBuilder = email => ({ email, assignmentId: selectedItem });
     }
 
+    /* ---------- ASSIGN TO STUDENTS ---------- */
     for (const student of students) {
       try {
         await fetch(`${API_BASE}${endpoint}`, {
@@ -174,7 +176,45 @@ export default function AssignCourseOrMcq() {
       }
     }
 
-    setMessage("✅ Assigned successfully to selected batches");
+    /* ---------- ASSIGN TO STAFF (ONCE) ---------- */
+    try {
+      if (assignType === "course") {
+        await fetch(`${API_BASE}/api/staff/addCourse`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            college: campus,
+            course: selectedItem
+          })
+        });
+      }
+
+      if (assignType === "mcq") {
+        await fetch(`${API_BASE}/api/staff/addMcq`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            college: campus,
+            mcq: selectedItem
+          })
+        });
+      }
+
+      if (assignType === "assignment") {
+        await fetch(`${API_BASE}/api/staff/addAssignment`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            college: campus,
+            assignmentId: selectedItem
+          })
+        });
+      }
+    } catch (err) {
+      console.error("Staff assignment failed", err);
+    }
+
+    setMessage("✅ Assigned successfully to students & staff");
     setLoading(false);
   };
 

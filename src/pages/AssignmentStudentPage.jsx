@@ -13,37 +13,39 @@ export default function AssignmentStudentPage() {
   const studentId = getUserId();
 
   /* ---------- CHECK COMPLETED ASSIGNMENTS ---------- */
-  const checkCompletedAssignments = useCallback(async (assignmentList) => {
-    try {
-      const requests = assignmentList.map((a) =>
-        fetch(
-          `${process.env.REACT_APP_API_BASE_URL}/api/assignment-submissions/assignment/${a._id}/student/${studentId}`,
-          {
-            headers: {
-              Authorization: `Bearer ${getToken()}`
+  const checkCompletedAssignments = useCallback(
+    async (assignmentList) => {
+      try {
+        const requests = assignmentList.map((a) =>
+          fetch(
+            `${process.env.REACT_APP_API_BASE_URL}/api/assignment-submissions/assignment/${a._id}/student/${studentId}`,
+            {
+              headers: {
+                Authorization: `Bearer ${getToken()}`
+              }
             }
-          }
-        )
-          .then((res) => (res.ok ? res.json() : null))
-          .then((data) => ({
-            assignmentId: a._id,
-            // ✅ ONLY disable if backend says completed
-            completed: data?.isCompleted === true
-          }))
-      );
+          )
+            .then((res) => (res.ok ? res.json() : null))
+            .then((data) => ({
+              assignmentId: a._id,
+              completed: data?.isCompleted === true
+            }))
+        );
 
-      const results = await Promise.all(requests);
+        const results = await Promise.all(requests);
+        const statusMap = {};
 
-      const statusMap = {};
-      results.forEach((r) => {
-        statusMap[r.assignmentId] = r.completed;
-      });
+        results.forEach((r) => {
+          statusMap[r.assignmentId] = r.completed;
+        });
 
-      setCompletedMap(statusMap);
-    } catch (err) {
-      console.error("Failed to check assignment completion", err);
-    }
-  }, [studentId]);
+        setCompletedMap(statusMap);
+      } catch (err) {
+        console.error("Failed to check assignment completion", err);
+      }
+    },
+    [studentId]
+  );
 
   /* ---------- FETCH ASSIGNMENTS ---------- */
   const fetchAssignments = useCallback(async () => {
@@ -79,7 +81,7 @@ export default function AssignmentStudentPage() {
       setAssignments([]);
     } finally {
       const elapsed = Date.now() - startTime;
-      setTimeout(() => setPageLoading(false), Math.max(3000 - elapsed, 0));
+      setTimeout(() => setPageLoading(false), Math.max(1500 - elapsed, 0));
     }
   }, [studentId, navigate, checkCompletedAssignments]);
 
@@ -93,14 +95,9 @@ export default function AssignmentStudentPage() {
       if (!document.fullscreenElement) {
         await document.documentElement.requestFullscreen();
       }
-    } catch (err) {
-      console.warn("Fullscreen denied", err);
-    }
+    } catch {}
 
-    // ✅ Start timer once
     initAssignmentTimer(assignmentId);
-
-    // ✅ Navigate
     navigate(`/assignments/solve/${assignmentId}`);
   };
 
@@ -113,14 +110,19 @@ export default function AssignmentStudentPage() {
     );
   }
 
+  /* ---------- FORCE 3 CARDS ---------- */
+  const MAX_CARDS = 3;
+  const displayAssignments = [
+    ...assignments,
+    ...Array(Math.max(0, MAX_CARDS - assignments.length)).fill(null)
+  ];
+
   /* ---------- UI ---------- */
   return (
     <div className="course-page">
       <div className="course-header">
-        <div>
-          <h2>Select Assignment</h2>
-          <p>Choose an assignment to start solving</p>
-        </div>
+        <h2>Select Assignment</h2>
+        <p>Choose an assignment to start solving</p>
       </div>
 
       {assignments.length === 0 ? (
@@ -128,11 +130,10 @@ export default function AssignmentStudentPage() {
           <p>No assignments assigned yet.</p>
         </div>
       ) : (
-        <div className="course-grid">
-          {assignments.map((a) => {
-            const isCompleted = completedMap[a._id];
-
-            return (
+        <div className="course-grid fixed-3">
+          {displayAssignments.map((a, index) =>
+            a ? (
+              /* -------- REAL CARD -------- */
               <div key={a._id} className="course-card">
                 <h3>{a.name}</h3>
 
@@ -141,20 +142,29 @@ export default function AssignmentStudentPage() {
                   {a.questions?.length || 0} Questions
                 </p>
 
-                {isCompleted && (
+                {completedMap[a._id] && (
                   <span className="completed-badge">Completed</span>
                 )}
 
                 <button
                   className="course-btn"
-                  disabled={isCompleted}
+                  disabled={completedMap[a._id]}
                   onClick={() => startAssignment(a._id)}
                 >
-                  {isCompleted ? "Completed ✓" : "Start Assignment →"}
+                  {completedMap[a._id]
+                    ? "Completed ✓"
+                    : "Start Assignment →"}
                 </button>
               </div>
-            );
-          })}
+            ) : (
+              /* -------- GHOST CARD -------- */
+              <div key={`ghost-${index}`} className="course-card ghost">
+                <div className="ghost-line title" />
+                <div className="ghost-line text" />
+                <div className="ghost-btn" />
+              </div>
+            )
+          )}
         </div>
       )}
     </div>

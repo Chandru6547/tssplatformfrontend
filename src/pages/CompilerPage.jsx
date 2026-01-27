@@ -48,9 +48,6 @@ export default function CompilerPage() {
 
   const resultRef = useRef(null);
 
-  /* ======================================================
-     RESTORE FROM LOCAL STORAGE
-  ====================================================== */
   useEffect(() => {
     const saved = localStorage.getItem(STORAGE_KEY);
 
@@ -65,9 +62,6 @@ export default function CompilerPage() {
     }
   }, []);
 
-  /* ======================================================
-     SAVE TO LOCAL STORAGE
-  ====================================================== */
   useEffect(() => {
     localStorage.setItem(
       STORAGE_KEY,

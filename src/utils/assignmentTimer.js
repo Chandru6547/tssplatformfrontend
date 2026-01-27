@@ -1,4 +1,4 @@
-export const ASSIGNMENT_DURATION_MS = 60 * 60 * 1000; // 1 hour
+export const ASSIGNMENT_DURATION_MS = 90 * 60 * 1000; // 1 hour
 
 export const getTimerKey = (assignmentId) =>
   `assignment_timer_start_${assignmentId}`;

@@ -82,13 +82,6 @@ export default function AssignmentListPage() {
                 >
                   View
                 </button>
-                <button
-                  onClick={() =>
-                    navigate(`/assignments/${a._id}/submissions`)
-                  }
-                >
-                  Submissions
-                </button>
               </span>
             </div>
           ))}

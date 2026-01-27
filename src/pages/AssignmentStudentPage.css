@@ -3,6 +3,7 @@
   padding: 40px 50px;
   min-height: 100vh;
   background: #ffffff;
+  font-family: Inter, system-ui;
 }
 
 /* ---------- HEADER ---------- */
@@ -22,10 +23,10 @@
   color: #64748b;
 }
 
-/* ---------- GRID ---------- */
-.course-grid {
+/* ---------- GRID (FIXED 3) ---------- */
+.course-grid.fixed-3 {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  grid-template-columns: repeat(3, 1fr);
   gap: 24px;
 }
 
@@ -37,6 +38,9 @@
   padding: 24px;
   min-height: 200px;
   border: 1px solid #e5e7eb;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
   transition: box-shadow 0.25s ease, transform 0.25s ease;
 }
 
@@ -45,7 +49,6 @@
   box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
 }
 
-/* ---------- CARD CONTENT ---------- */
 .course-card h3 {
   font-size: 18px;
   font-weight: 600;
@@ -60,7 +63,7 @@
   margin-bottom: 22px;
 }
 
-/* ---------- BADGE ---------- */
+/* ---------- COMPLETED BADGE ---------- */
 .completed-badge {
   position: absolute;
   top: 16px;
@@ -100,6 +103,61 @@
   cursor: not-allowed;
 }
 
+/* ---------- GHOST CARD ---------- */
+.course-card.ghost {
+  background: #f9fafb;
+  border: 2px dashed #e5e7eb;
+  box-shadow: none;
+  cursor: default;
+}
+
+.course-card.ghost:hover {
+  transform: none;
+  box-shadow: none;
+}
+
+/* ---------- GHOST CONTENT ---------- */
+.ghost-line {
+  background: linear-gradient(
+    90deg,
+    #e5e7eb 25%,
+    #f3f4f6 37%,
+    #e5e7eb 63%
+  );
+  background-size: 400% 100%;
+  animation: shimmer 1.4s infinite;
+  border-radius: 6px;
+}
+
+.ghost-line.title {
+  height: 20px;
+  width: 70%;
+  margin-bottom: 16px;
+}
+
+.ghost-line.text {
+  height: 14px;
+  width: 50%;
+}
+
+.ghost-btn {
+  height: 42px;
+  width: 100%;
+  margin-top: 30px;
+  border-radius: 8px;
+  background: #e5e7eb;
+}
+
+/* ---------- SHIMMER ---------- */
+@keyframes shimmer {
+  0% {
+    background-position: -400px 0;
+  }
+  100% {
+    background-position: 400px 0;
+  }
+}
+
 /* ---------- EMPTY STATE ---------- */
 .empty-state {
   background: #ffffff;
@@ -113,39 +171,9 @@
 /* ---------- LOADER ---------- */
 .course-loader {
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
   height: 70vh;
-}
-
-.loader-text {
-  margin-top: 20px;
-  font-size: 14px;
+  font-size: 16px;
   color: #64748b;
-}
-
-/* ---------- DOT ANIMATION ---------- */
-.dots i {
-  animation: blink 1.4s infinite both;
-}
-
-.dots i:nth-child(2) {
-  animation-delay: 0.2s;
-}
-
-.dots i:nth-child(3) {
-  animation-delay: 0.4s;
-}
-
-@keyframes blink {
-  0% {
-    opacity: 0.2;
-  }
-  20% {
-    opacity: 1;
-  }
-  100% {
-    opacity: 0.2;
-  }
 }
