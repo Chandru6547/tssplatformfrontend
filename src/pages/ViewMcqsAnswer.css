@@ -1,93 +1,108 @@
-/* ---------- PAGE ---------- */
 .mcq-page {
-  padding: 24px;
-  background: #f8f9fc;
+  padding: 28px;
+  background: linear-gradient(180deg, #f4f8ff, #ffffff);
   min-height: 100vh;
 }
 
-.page-subtitle {
-  color: #555;
-  margin-bottom: 20px;
+/* HEADER */
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
 }
 
-/* ---------- GRID ---------- */
-.mcq-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+.page-header h2 {
+  font-size: 30px;
+  font-weight: 800;
+}
+
+.page-header p {
+  color: #555;
+}
+
+.header-stats {
+  display: flex;
   gap: 20px;
 }
 
-/* ---------- CARD ---------- */
-.mcq-card-pro {
-  background: linear-gradient(145deg, #ffffff, #f3f6ff);
-  border-radius: 16px;
-  padding: 20px;
+.header-stats div {
+  background: #fff;
+  padding: 12px 18px;
+  border-radius: 12px;
+  text-align: center;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+}
+
+.header-stats strong {
+  font-size: 22px;
+  display: block;
+}
+
+/* GRID */
+.mcq-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 22px;
+}
+
+/* CARD */
+.mcq-card {
+  background: #ffffff;
+  border-radius: 18px;
+  padding: 22px;
+  box-shadow: 0 14px 32px rgba(0,0,0,0.08);
   cursor: pointer;
-  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
-  transition: all 0.3s ease;
-  position: relative;
+  transition: transform .25s, box-shadow .25s;
 }
 
-.mcq-card-pro:hover {
-  transform: translateY(-8px) scale(1.02);
-  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.15);
+.mcq-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 22px 45px rgba(0,0,0,0.15);
 }
 
-/* ---------- CARD HEADER ---------- */
-.mcq-card-header {
+.card-top {
   display: flex;
   justify-content: space-between;
   margin-bottom: 14px;
 }
 
-.mcq-badge {
-  background: linear-gradient(90deg, #4c6ef5, #15aabf);
-  color: #fff;
-  font-size: 12px;
+.badge {
+  background: linear-gradient(90deg,#4c6ef5,#15aabf);
+  color: white;
   padding: 4px 10px;
-  border-radius: 20px;
-  font-weight: 600;
+  border-radius: 14px;
+  font-size: 12px;
 }
 
-.mcq-category {
-  font-size: 12px;
+.chip {
   background: #eef2ff;
   padding: 4px 10px;
-  border-radius: 20px;
+  border-radius: 14px;
+  font-size: 12px;
 }
 
-/* ---------- CARD CONTENT ---------- */
-.mcq-title {
-  font-size: 18px;
+.mcq-card h3 {
+  font-size: 20px;
   font-weight: 700;
-  margin-bottom: 12px;
 }
 
-.mcq-meta {
-  font-size: 14px;
-  margin-bottom: 16px;
+.meta {
+  margin: 14px 0;
   color: #444;
 }
 
-/* ---------- BUTTON ---------- */
-.mcq-action {
+.mcq-card button {
   width: 100%;
-  padding: 10px 14px;
+  padding: 12px;
   border-radius: 10px;
   border: none;
-  background: linear-gradient(90deg, #4c6ef5, #364fc7);
-  color: #fff;
+  background: linear-gradient(90deg,#4c6ef5,#364fc7);
+  color: white;
   font-weight: 600;
-  cursor: pointer;
-  transition: transform 0.2s, box-shadow 0.2s;
 }
 
-.mcq-card-pro:hover .mcq-action {
-  transform: translateY(-1px);
-  box-shadow: 0 6px 14px rgba(76, 110, 245, 0.4);
-}
-
-/* ---------- MODAL ---------- */
+/* MODAL */
 .modal-overlay {
   position: fixed;
   inset: 0;
@@ -95,133 +110,87 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1000;
 }
 
 .modal {
   width: 720px;
   max-width: 96%;
-  background: #fff;
+  background: white;
   padding: 26px;
-  border-radius: 16px;
+  border-radius: 18px;
   position: relative;
-  animation: zoomIn 0.3s;
-  user-select: none;
 }
 
-@keyframes zoomIn {
-  from { transform: scale(0.9); opacity: 0; }
-  to { transform: scale(1); opacity: 1; }
-}
-
-/* ---------- WATERMARK ---------- */
 .watermark {
   position: absolute;
   inset: 0;
   display: flex;
-  align-items: center;
   justify-content: center;
+  align-items: center;
   font-size: 28px;
-  color: rgba(0,0,0,0.05);
+  color: rgba(0,0,0,0.04);
   transform: rotate(-25deg);
-  pointer-events: none;
 }
 
-/* ---------- PROGRESS ---------- */
 .progress-bar {
   height: 6px;
   background: #eee;
-  border-radius: 10px;
+  border-radius: 6px;
   overflow: hidden;
 }
 
 .progress-fill {
   height: 100%;
-  background: linear-gradient(90deg, #4c6ef5, #15aabf);
-  transition: width 0.3s;
+  background: linear-gradient(90deg,#4c6ef5,#15aabf);
 }
 
-.progress-text {
-  margin: 8px 0;
-  font-size: 14px;
-  color: #555;
+.question {
+  margin: 16px 0;
 }
 
-/* ---------- QUESTION ---------- */
-.question-text {
-  margin-top: 10px;
+/* OPTIONS */
+.options {
+  list-style: none;
+  padding: 0;
 }
 
-/* ---------- OPTIONS ---------- */
 .option {
-  padding: 12px;
   background: #f5f7ff;
+  padding: 12px;
   border-radius: 10px;
   margin-bottom: 10px;
   display: flex;
-  gap: 10px;
   align-items: center;
+  gap: 10px;
 }
 
 .option.correct { background: #d4f7dc; }
 .option.wrong { background: #fdecea; }
-.option.selected { border: 2px solid #4c6ef5; }
 
-.pulse {
-  animation: pulse 0.6s;
-}
-
-@keyframes pulse {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.03); }
-  100% { transform: scale(1); }
-}
-
-/* ---------- TAGS ---------- */
 .tag {
   margin-left: auto;
-  padding: 4px 8px;
   font-size: 12px;
-  border-radius: 4px;
-  color: #fff;
+  padding: 4px 8px;
+  border-radius: 6px;
+  color: white;
 }
 
-.your-answer { background: #4c6ef5; }
-.correct-tag { background: #2e7d32; }
+.success { background: #2e7d32; }
+.info { background: #4c6ef5; }
 
-/* ---------- EXPLANATION ---------- */
+/* EXPLANATION */
 .explanation {
-  margin-top: 12px;
+  margin-top: 14px;
   padding: 14px;
   background: #eef3ff;
   border-radius: 10px;
 }
 
-/* ---------- DOT NAV ---------- */
-.dots {
-  display: flex;
-  gap: 6px;
-  justify-content: center;
-  margin-top: 14px;
-}
-
-.dot {
-  width: 10px;
-  height: 10px;
-  background: #ccc;
-  border-radius: 50%;
-  cursor: pointer;
-}
-
-.dot.active {
-  background: #4c6ef5;
-}
-
-/* ---------- ACTIONS ---------- */
+/* ACTIONS */
 .modal-actions {
   display: flex;
   justify-content: space-between;
-  margin-top: 18px;
+  margin-top: 20px;
 }
 
 .modal-actions button {
@@ -233,11 +202,12 @@
 
 .close {
   background: #e53935;
-  color: #fff;
+  color: white;
 }
 
-/* ---------- LOADING ---------- */
-.loading {
+/* LOADER */
+.page-loader {
   padding: 40px;
   text-align: center;
+  font-size: 18px;
 }

@@ -83,7 +83,6 @@ export default function StaffMCQList() {
             </div>
 
             <div className="card-footer">
-              <span className="status active">ACTIVE</span>
               <button className="view-btn">View Report →</button>
             </div>
           </div>

@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { getToken, logout, getUserId } from "../utils/auth";
 import "./MCQTestPage.css";
 
-/* ================= SHUFFLE UTILITY (ADDED) ================= */
+/* ================= SHUFFLE UTILITY ================= */
 const shuffleArray = (array) => {
   const arr = [...array];
   for (let i = arr.length - 1; i > 0; i--) {
@@ -16,7 +16,7 @@ const shuffleArray = (array) => {
 export default function MCQTestPage() {
   const { mcqId } = useParams();
   const navigate = useNavigate();
-  const userId = getUserId(); // ✅ already used elsewhere
+  const userId = getUserId();
 
   const [mcq, setMcq] = useState(null);
   const [index, setIndex] = useState(0);
@@ -26,62 +26,60 @@ export default function MCQTestPage() {
   const [score, setScore] = useState(0);
   const [submitting, setSubmitting] = useState(false);
   const [totalTimeLeft, setTotalTimeLeft] = useState(0);
-  const totalTimerRef = useRef(null);
 
-  /* CAMERA */
-  const videoRef = useRef(null);
-  const streamRef = useRef(null);
-  const cameraStartedRef = useRef(false);
+  const totalTimerRef = useRef(null);
 
   /* TAB SWITCH */
   const tabSwitchCountRef = useRef(0);
   const [showTabWarning, setShowTabWarning] = useState(false);
 
-  /* ================= STORAGE KEYS (UPDATED) ================= */
+  /* ✅ STABLE STORAGE KEYS (FIXED) */
   const STORAGE_KEY = useRef(`mcq_${mcqId}_${userId}_answers`).current;
   const ORDER_KEY = useRef(`mcq_${mcqId}_${userId}_order`).current;
 
-    const submitTest = useCallback(async (forced = false) => {
-    if (submitting) return;
-    setSubmitting(true);
+  /* ---------- SUBMIT TEST ---------- */
+  const submitTest = useCallback(
+    async (forced = false) => {
+      if (submitting) return;
+      setSubmitting(true);
 
-    try {
-      const payload = mcq.questions.map(q => ({
-        questionId: q._id,
-        selectedOption: answers[q._id] || null
-      }));
+      try {
+        const payload = mcq.questions.map((q) => ({
+          questionId: q._id,
+          selectedOption: answers[q._id] || null,
+        }));
 
-      const res = await fetch(
-        `${process.env.REACT_APP_API_BASE_URL}/api/mcq-submissions/submit`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${getToken()}`
-          },
-          body: JSON.stringify({
-            mcqId,
-            studentId: userId,
-            answers: payload,
-            forcedSubmit: forced
-          })
-        }
-      );
+        const res = await fetch(
+          `${process.env.REACT_APP_API_BASE_URL}/api/mcq-submissions/submit`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${getToken()}`,
+            },
+            body: JSON.stringify({
+              mcqId,
+              studentId: userId,
+              answers: payload,
+              forcedSubmit: forced,
+            }),
+          }
+        );
 
-      const data = await res.json();
-      setScore(data?.submission?.score ?? data?.score ?? 0);
-      setShowResult(true);
+        const data = await res.json();
+        setScore(data?.submission?.score ?? data?.score ?? 0);
+        setShowResult(true);
 
-      /* ---------- CLEANUP (ADDED) ---------- */
-      localStorage.removeItem(STORAGE_KEY);
-      localStorage.removeItem(ORDER_KEY);
-    } finally {
-      stopCameraMic();
-      exitFullscreenSafely();
-    }
-  }, [mcqId, userId, answers, mcq, submitting, STORAGE_KEY, ORDER_KEY]);
+        localStorage.removeItem(STORAGE_KEY);
+        localStorage.removeItem(ORDER_KEY);
+      } finally {
+        exitFullscreenSafely();
+      }
+    },
+    [mcqId, userId, answers, mcq, submitting, STORAGE_KEY, ORDER_KEY]
+  );
 
-  /* ---------- TOTAL TEST TIMER ---------- */
+  /* ---------- TOTAL TIMER ---------- */
   useEffect(() => {
     if (!started || showResult || !mcq) return;
 
@@ -91,7 +89,7 @@ export default function MCQTestPage() {
     }
 
     totalTimerRef.current = setInterval(() => {
-      setTotalTimeLeft(prev => {
+      setTotalTimeLeft((prev) => {
         if (prev <= 1) {
           clearInterval(totalTimerRef.current);
           submitTest(true);
@@ -101,9 +99,7 @@ export default function MCQTestPage() {
       });
     }, 1000);
 
-    return () => {
-      if (totalTimerRef.current) clearInterval(totalTimerRef.current);
-    };
+    return () => clearInterval(totalTimerRef.current);
   }, [started, showResult, totalTimeLeft, mcq, submitTest]);
 
   /* ---------- FULLSCREEN ---------- */
@@ -119,104 +115,46 @@ export default function MCQTestPage() {
     }
   };
 
-  /* ---------- CAMERA + MIC ---------- */
-  const startCameraMic = async () => {
-    if (cameraStartedRef.current) return;
-
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: {
-          facingMode: "user",
-          width: { ideal: 640 },
-          height: { ideal: 480 }
-        },
-        audio: true
-      });
-
-      streamRef.current = stream;
-      cameraStartedRef.current = true;
-
-      const video = videoRef.current;
-      if (!video) return;
-
-      video.pause();
-      video.srcObject = null;
-
-      video.srcObject = stream;
-      video.muted = true;
-      video.playsInline = true;
-      video.autoplay = true;
-
-      video.style.display = "none";
-      video.style.display = "block";
-
-      await new Promise(resolve => {
-        video.onloadedmetadata = () => resolve();
-      });
-
-      await video.play();
-
-      stream.getTracks().forEach(track => {
-        track.onended = () => {
-          if (!showResult) submitTest(true);
-        };
-      });
-    } catch (err) {
-      alert("Camera & microphone permission is mandatory");
-      throw err;
-    }
-  };
-
-  const stopCameraMic = () => {
-    streamRef.current?.getTracks().forEach(t => t.stop());
-    streamRef.current = null;
-    cameraStartedRef.current = false;
-  };
-
-  /* ---------- SUBMIT TEST ---------- */
-
-
-  /* ================= FETCH MCQ + SHUFFLE (UPDATED) ================= */
+  /* ---------- FETCH MCQ + SHUFFLE ---------- */
   useEffect(() => {
-  const fetchMCQ = async () => {
-    const res = await fetch(
-      `${process.env.REACT_APP_API_BASE_URL}/api/mcqs/${mcqId}`,
-      { headers: { Authorization: `Bearer ${getToken()}` } }
-    );
-
-    if (res.status === 401 || res.status === 403) {
-      logout();
-      navigate("/login");
-      return;
-    }
-
-    const data = await res.json();
-
-    const savedOrder = localStorage.getItem(ORDER_KEY);
-    let finalQuestions;
-
-    if (savedOrder) {
-      const order = JSON.parse(savedOrder);
-      finalQuestions = order
-        .map(id => data.questions.find(q => q._id === id))
-        .filter(Boolean);
-    } else {
-      finalQuestions = shuffleArray(data.questions);
-      localStorage.setItem(
-        ORDER_KEY,
-        JSON.stringify(finalQuestions.map(q => q._id))
+    const fetchMCQ = async () => {
+      const res = await fetch(
+        `${process.env.REACT_APP_API_BASE_URL}/api/mcqs/${mcqId}`,
+        { headers: { Authorization: `Bearer ${getToken()}` } }
       );
-    }
 
-    setMcq({ ...data, questions: finalQuestions });
+      if (res.status === 401 || res.status === 403) {
+        logout();
+        navigate("/login");
+        return;
+      }
 
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved) setAnswers(JSON.parse(saved));
-  };
+      const data = await res.json();
 
-  fetchMCQ();
-}, [mcqId, navigate, ORDER_KEY, STORAGE_KEY]);
+      const savedOrder = localStorage.getItem(ORDER_KEY);
+      let finalQuestions;
 
+      if (savedOrder) {
+        const order = JSON.parse(savedOrder);
+        finalQuestions = order
+          .map((id) => data.questions.find((q) => q._id === id))
+          .filter(Boolean);
+      } else {
+        finalQuestions = shuffleArray(data.questions);
+        localStorage.setItem(
+          ORDER_KEY,
+          JSON.stringify(finalQuestions.map((q) => q._id))
+        );
+      }
+
+      setMcq({ ...data, questions: finalQuestions });
+
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) setAnswers(JSON.parse(saved));
+    };
+
+    fetchMCQ();
+  }, [mcqId, navigate, STORAGE_KEY, ORDER_KEY]);
 
   /* ---------- FULLSCREEN EXIT ---------- */
   useEffect(() => {
@@ -232,7 +170,6 @@ export default function MCQTestPage() {
   }, [started, showResult, submitTest]);
 
   /* ---------- TAB SWITCH DETECTION ---------- */
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (!started || showResult) return;
 
@@ -243,7 +180,7 @@ export default function MCQTestPage() {
         setShowTabWarning(true);
       }
 
-      if (tabSwitchCountRef.current >= 10000) {
+      if (tabSwitchCountRef.current >= 3) {
         submitTest(true);
       }
     };
@@ -266,7 +203,6 @@ export default function MCQTestPage() {
   /* ---------- START TEST ---------- */
   const startTest = async () => {
     try {
-      await startCameraMic();
       await enterFullscreen();
       setStarted(true);
     } catch {
@@ -283,8 +219,7 @@ export default function MCQTestPage() {
         <h1>{mcq.title || "MCQ Test"}</h1>
         <ul className="rules">
           <li>Fullscreen mandatory</li>
-          <li>Camera & microphone ON</li>
-          <li>Tab switching monitored</li>
+          <li>Tab switching is monitored</li>
           <li>⏱️ Total Duration: {mcq.duration} minutes</li>
         </ul>
         <button className="start-btn" onClick={startTest}>
@@ -298,55 +233,42 @@ export default function MCQTestPage() {
   const selected = answers[question._id];
   const progress = ((index + 1) / mcq.questions.length) * 100;
 
-  /* ---------- SELECT OPTION ---------- */
-  const selectOption = opt => {
+  const selectOption = (opt) => {
     if (selected) return;
     const updated = { ...answers, [question._id]: opt };
     setAnswers(updated);
     localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
   };
 
-  /* ---------- FORMAT TIME HELPER ---------- */
   const formatTime = (seconds) => {
-    const hours = Math.floor(seconds / 3600);
-    const minutes = Math.floor((seconds % 3600) / 60);
-    const secs = seconds % 60;
-    
-    if (hours > 0) {
-      return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
-    }
-    return `${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+    const m = Math.floor(seconds / 60);
+    const s = seconds % 60;
+    return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
   };
-
-
 
   return (
     <>
-      <video
-        ref={videoRef}
-        className="camera-preview"
-        muted
-        autoPlay
-        playsInline
-      />
-
       <div className={`exam-wrapper ${showResult ? "blur" : ""}`}>
         <div className="progress-bar">
           <div style={{ width: `${progress}%` }} />
         </div>
+
         <div className="total-time-top-right">
           ⏱️ {formatTime(totalTimeLeft)}
         </div>
+
         <div className="exam-container">
           <div className="question-panel">
             <h2>{question.question}</h2>
           </div>
 
           <div className="options-panel">
-            {["A", "B", "C", "D"].map(opt => (
+            {["A", "B", "C", "D"].map((opt) => (
               <div
                 key={opt}
-                className={`option-tile ${selected === opt ? "selected" : ""}`}
+                className={`option-tile ${
+                  selected === opt ? "selected" : ""
+                }`}
                 onClick={() => selectOption(opt)}
               >
                 <span className="opt-circle">{opt}</span>
@@ -400,5 +322,4 @@ export default function MCQTestPage() {
       )}
     </>
   );
-}
-  
+} 

@@ -40,35 +40,13 @@ export default function ViewMcqsAnswer() {
   useEffect(() => {
     const handler = () => setBlurred(document.hidden);
     document.addEventListener("visibilitychange", handler);
-    return () =>
-      document.removeEventListener("visibilitychange", handler);
+    return () => document.removeEventListener("visibilitychange", handler);
   }, []);
 
-  /* ---------- PREVENT BACKGROUND SCROLL ---------- */
+  /* ---------- LOCK SCROLL ---------- */
   useEffect(() => {
     document.body.style.overflow = open ? "hidden" : "auto";
   }, [open]);
-
-  /* ---------- KEYBOARD NAVIGATION ---------- */
-  useEffect(() => {
-    if (!open) return;
-
-    const handleKey = (e) => {
-      if (e.key === "ArrowRight" && index < questions.length - 1) {
-        setIndex((i) => i + 1);
-        setShowExplanation(false);
-      }
-      if (e.key === "ArrowLeft" && index > 0) {
-        setIndex((i) => i - 1);
-        setShowExplanation(false);
-      }
-      if (e.key === "Enter") setShowExplanation(true);
-      if (e.key === "Escape") setOpen(false);
-    };
-
-    window.addEventListener("keydown", handleKey);
-    return () => window.removeEventListener("keydown", handleKey);
-  }, [open, index, questions.length]);
 
   /* ---------- OPEN MCQ ---------- */
   const openMcq = async (mcq) => {
@@ -88,11 +66,8 @@ export default function ViewMcqsAnswer() {
     if (!submissions.length) return alert("Not attempted");
 
     const last = submissions[0];
-    const hours =
-      (Date.now() - new Date(last.createdAt)) / 36e5;
-
-    if (hours < 24)
-      return alert("Answers unlock after 24 hours");
+    const hours = (Date.now() - new Date(last.createdAt)) / 36e5;
+    if (hours < 24) return alert("Answers unlock after 24 hours");
 
     setSubmission(last);
     setQuestions(mcq.questions);
@@ -101,41 +76,57 @@ export default function ViewMcqsAnswer() {
     setOpen(true);
   };
 
-  if (loading) return <p className="loading">Loading MCQs...</p>;
+  if (loading) return <div className="page-loader">Loading MCQs…</div>;
 
   const q = questions[index];
   const studentAnswer = submission?.answers?.[q?._id];
-  const progress = ((index + 1) / questions.length) * 100;
+  const progress = questions.length
+    ? ((index + 1) / questions.length) * 100
+    : 0;
 
   return (
     <div className="mcq-page">
-      <h2>MCQ Answer Review</h2>
+      {/* ---------- HEADER ---------- */}
+      <div className="page-header">
+        <div>
+          <h2>MCQ Answer Review</h2>
+          <p>Review your submitted MCQs with correct answers and explanations</p>
+        </div>
 
-      <p className="page-subtitle">
-        Review your submitted MCQs with correct answers and explanations
-      </p>
+        <div className="header-stats">
+          <div>
+            <strong>{mcqs.length}</strong>
+            <span>MCQs</span>
+          </div>
+          <div>
+            <strong>
+              {mcqs.reduce((a, b) => a + b.questions.length, 0)}
+            </strong>
+            <span>Questions</span>
+          </div>
+        </div>
+      </div>
 
+      {/* ---------- GRID ---------- */}
       <div className="mcq-grid">
         {mcqs.map((mcq) => (
           <div
             key={mcq._id}
-            className="mcq-card-pro"
+            className="mcq-card"
             onClick={() => openMcq(mcq)}
           >
-            <div className="mcq-card-header">
-              <span className="mcq-badge">MCQ</span>
-              <span className="mcq-category">{mcq.category}</span>
+            <div className="card-top">
+              <span className="badge">MCQ</span>
+              <span className="chip">{mcq.category}</span>
             </div>
 
-            <h3 className="mcq-title">{mcq.topic}</h3>
+            <h3>{mcq.topic}</h3>
 
-            <div className="mcq-meta">
+            <p className="meta">
               📝 {mcq.questions.length} Questions
-            </div>
+            </p>
 
-            <button className="mcq-action">
-              Review Answers →
-            </button>
+            <button>Review Answers →</button>
           </div>
         ))}
       </div>
@@ -143,12 +134,7 @@ export default function ViewMcqsAnswer() {
       {/* ---------- MODAL ---------- */}
       {open && (
         <div className="modal-overlay">
-          <div
-            className={`modal ${blurred ? "blurred" : ""}`}
-            onContextMenu={(e) => e.preventDefault()}
-            onCopy={(e) => e.preventDefault()}
-            onClick={(e) => e.stopPropagation()}
-          >
+          <div className={`modal ${blurred ? "blurred" : ""}`}>
             <div className="watermark">{email}</div>
 
             <div className="progress-bar">
@@ -162,9 +148,9 @@ export default function ViewMcqsAnswer() {
               Question {index + 1} of {questions.length}
             </p>
 
-            <h3 className="question-text">{q.question}</h3>
+            <h3 className="question">{q?.question}</h3>
 
-            <ul>
+            <ul className="options">
               {["A", "B", "C", "D"].map((opt) => {
                 const key = `option${opt}`;
                 const correct = q.correctOption === opt;
@@ -173,23 +159,14 @@ export default function ViewMcqsAnswer() {
                 return (
                   <li
                     key={opt}
-                    className={`option 
-                      ${correct ? "correct pulse" : ""}
-                      ${selected && !correct ? "wrong pulse" : ""}
-                      ${selected ? "selected" : ""}
+                    className={`option
+                      ${correct ? "correct" : ""}
+                      ${selected && !correct ? "wrong" : ""}
                     `}
                   >
                     <b>{opt}.</b> {q[key]}
-                    {selected && (
-                      <span className="tag your-answer">
-                        Your Answer
-                      </span>
-                    )}
-                    {correct && (
-                      <span className="tag correct-tag">
-                        Correct
-                      </span>
-                    )}
+                    {correct && <span className="tag success">Correct</span>}
+                    {selected && <span className="tag info">Your Answer</span>}
                   </li>
                 );
               })}
@@ -200,24 +177,11 @@ export default function ViewMcqsAnswer() {
                 className="reveal"
                 onClick={() => setShowExplanation(true)}
               >
-                Reveal Explanation (Enter)
+                Reveal Explanation
               </button>
             ) : (
               <div className="explanation">{q.explanation}</div>
             )}
-
-            <div className="dots">
-              {questions.map((_, i) => (
-                <span
-                  key={i}
-                  className={`dot ${i === index ? "active" : ""}`}
-                  onClick={() => {
-                    setIndex(i);
-                    setShowExplanation(false);
-                  }}
-                />
-              ))}
-            </div>
 
             <div className="modal-actions">
               <button
@@ -241,7 +205,7 @@ export default function ViewMcqsAnswer() {
               </button>
 
               <button className="close" onClick={() => setOpen(false)}>
-                Close (Esc)
+                Close
               </button>
             </div>
           </div>
