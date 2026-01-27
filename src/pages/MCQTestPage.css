@@ -447,3 +447,77 @@
     font-size: 16px;
   }
 }
+/* ================= MOBILE SPACE REDUCTION ================= */
+@media (max-width: 480px) {
+
+  /* Overall page padding */
+  .exam-container {
+    padding: 10px;
+    gap: 10px;
+  }
+
+  /* Question card */
+  .question-panel {
+    padding: 14px;
+    margin-bottom: 8px;
+  }
+
+  .question-panel h2 {
+    font-size: 18px;
+    line-height: 1.4;
+    margin-top: 0;
+  }
+
+  /* Timer */
+  .total-time-top-right {
+    padding: 6px 14px;
+    font-size: 13px;
+    margin-top: 0;
+  }
+
+  /* Options panel */
+  .options-panel {
+    padding: 0;
+  }
+
+  .option-tile {
+    padding: 10px 12px;
+    margin-bottom: 10px;
+    gap: 10px;
+    border-radius: 10px;
+  }
+
+  .opt-circle {
+    width: 28px;
+    height: 28px;
+    font-size: 13px;
+  }
+
+  /* Option text */
+  .option-tile span:last-child {
+    font-size: 14px;
+    line-height: 1.4;
+  }
+
+  /* Navigation buttons */
+  .nav-buttons {
+    margin-top: 12px;
+    gap: 10px;
+  }
+
+  .nav-buttons button {
+    padding: 12px;
+    font-size: 14px;
+    border-radius: 8px;
+  }
+
+  /* Progress bar */
+  .progress-bar {
+    height: 4px;
+  }
+
+  /* Remove unnecessary height stretching */
+  .exam-wrapper {
+    min-height: auto;
+  }
+}
