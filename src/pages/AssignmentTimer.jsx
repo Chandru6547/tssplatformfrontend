@@ -3,31 +3,37 @@ import {
   getTimerKey,
   getRemainingTime
 } from "../utils/assignmentTimer";
+import { getUserId } from "../utils/auth";
 
 export default function AssignmentTimer({ assignmentId, onTimeUp }) {
+  const studentId = getUserId();
+
   const [remaining, setRemaining] = useState(
-    getRemainingTime(assignmentId)
+    getRemainingTime(assignmentId, studentId)
   );
 
   useEffect(() => {
-    // ⏱️ Start timer only once
-    const key = getTimerKey(assignmentId);
+    const key = getTimerKey(assignmentId, studentId);
+
     if (!localStorage.getItem(key)) {
       localStorage.setItem(key, Date.now());
     }
 
     const interval = setInterval(() => {
-      const timeLeft = getRemainingTime(assignmentId);
+      const timeLeft = getRemainingTime(
+        assignmentId,
+        studentId
+      );
       setRemaining(timeLeft);
 
       if (timeLeft <= 0) {
         clearInterval(interval);
-        onTimeUp(); // 🚨 AUTO END TEST
+        onTimeUp();
       }
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [assignmentId, onTimeUp]);
+  }, [assignmentId, studentId, onTimeUp]);
 
   const mins = Math.floor(remaining / 60000);
   const secs = Math.floor((remaining % 60000) / 1000);

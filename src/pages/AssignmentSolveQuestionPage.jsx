@@ -8,6 +8,7 @@ import "./AssignmentSolveQuestionPage.css";
 export default function AssignmentSolveQuestionPage() {
   const { assignmentId, questionId } = useParams();
   const navigate = useNavigate();
+  const studentId = getUserId(); // ✅ IMPORTANT
 
   const [question, setQuestion] = useState(null);
   const [language, setLanguage] = useState("python");
@@ -15,18 +16,24 @@ export default function AssignmentSolveQuestionPage() {
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  const autoSubmittedRef = useRef(false); // 🔐 prevents multiple submits
+  const autoSubmittedRef = useRef(false);
+
+  // ✅ STUDENT-SCOPED KEY
+  const completedKey = `assignment_completed_questions_${assignmentId}_${studentId}`;
 
   /* ---------- MARK QUESTION COMPLETED ---------- */
   const markQuestionCompleted = useCallback(() => {
-    const key = `assignment_completed_questions_${assignmentId}`;
-    const completed = JSON.parse(localStorage.getItem(key)) || [];
+    const completed =
+      JSON.parse(localStorage.getItem(completedKey)) || [];
 
     if (!completed.includes(questionId)) {
       completed.push(questionId);
-      localStorage.setItem(key, JSON.stringify(completed));
+      localStorage.setItem(
+        completedKey,
+        JSON.stringify(completed)
+      );
     }
-  }, [assignmentId, questionId]);
+  }, [completedKey, questionId]);
 
   /* ---------- FULLSCREEN ENFORCEMENT ---------- */
   useEffect(() => {
@@ -65,29 +72,33 @@ export default function AssignmentSolveQuestionPage() {
   }, [questionId, navigate]);
 
   /* ---------- SUBMIT ---------- */
-  const submitAssignment = useCallback(async (isAuto = false) => {
+  const submitAssignment = useCallback(async () => {
     setLoading(true);
     setResult(null);
 
     try {
-      const res = await fetch("https://tssplatform.onrender.com/run", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${getToken()}`
-        },
-        body: JSON.stringify({
-          language,
-          code,
-          questionId,
-          assignmentId,
-          studentId: getUserId()
-        })
-      });
+      const res = await fetch(
+        "https://tssplatform.onrender.com/run",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${getToken()}`
+          },
+          body: JSON.stringify({
+            language,
+            code,
+            questionId,
+            assignmentId,
+            studentId
+          })
+        }
+      );
 
       const data = await res.json();
       setResult(data);
 
+      // ✅ MARK COMPLETED ONLY IF ALL TESTCASES PASSED
       if (data.passed === data.total) {
         markQuestionCompleted();
       }
@@ -96,16 +107,23 @@ export default function AssignmentSolveQuestionPage() {
     } finally {
       setLoading(false);
     }
-  }, [language, code, questionId, assignmentId, markQuestionCompleted]);
+  }, [
+    language,
+    code,
+    questionId,
+    assignmentId,
+    studentId,
+    markQuestionCompleted
+  ]);
 
-  /* ---------- AUTO SUBMIT ON LOAD ---------- */
+  /* ---------- AUTO SUBMIT ON LOAD (OPTIONAL FEATURE) ---------- */
   useEffect(() => {
     if (!question) return;
     if (!code.trim()) return;
     if (autoSubmittedRef.current) return;
 
     autoSubmittedRef.current = true;
-    submitAssignment(true);
+    submitAssignment();
   }, [question, code, submitAssignment]);
 
   /* ---------- RUN ---------- */
@@ -114,18 +132,21 @@ export default function AssignmentSolveQuestionPage() {
     setResult(null);
 
     try {
-      const res = await fetch("https://tssplatform.onrender.com/run", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${getToken()}`
-        },
-        body: JSON.stringify({
-          language,
-          code,
-          testcases: question.sampleTestcases
-        })
-      });
+      const res = await fetch(
+        "https://tssplatform.onrender.com/run",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${getToken()}`
+          },
+          body: JSON.stringify({
+            language,
+            code,
+            testcases: question.sampleTestcases
+          })
+        }
+      );
 
       setResult(await res.json());
     } catch {
@@ -145,7 +166,7 @@ export default function AssignmentSolveQuestionPage() {
   return (
     <div className="assignment-root">
       <div className="assignment-layout">
-        {/* LEFT */}
+        {/* ---------- LEFT ---------- */}
         <div className="assignment-left">
           <div className="question-card">
             <div className="question-header">
@@ -159,7 +180,9 @@ export default function AssignmentSolveQuestionPage() {
 
             <div
               className="question-description"
-              dangerouslySetInnerHTML={{ __html: question.description }}
+              dangerouslySetInnerHTML={{
+                __html: question.description
+              }}
             />
 
             <h3 className="section-title">Sample Testcases</h3>
@@ -175,10 +198,9 @@ export default function AssignmentSolveQuestionPage() {
           </div>
         </div>
 
-        {/* RIGHT */}
+        {/* ---------- RIGHT ---------- */}
         <div className="assignment-right">
           <div className="editor-header">
-            {/* 🔙 GO BACK BUTTON */}
             <button
               className="btn ghost"
               onClick={() => navigate(-1)}
@@ -205,7 +227,11 @@ export default function AssignmentSolveQuestionPage() {
           </div>
 
           <div className="editor-wrapper">
-            <CodeEditor language={language} code={code} setCode={setCode} />
+            <CodeEditor
+              language={language}
+              code={code}
+              setCode={setCode}
+            />
           </div>
 
           <div className="editor-actions">
@@ -218,7 +244,7 @@ export default function AssignmentSolveQuestionPage() {
             </button>
             <button
               className="btn primary"
-              onClick={() => submitAssignment(false)}
+              onClick={submitAssignment}
               disabled={loading}
             >
               🚀 Submit
@@ -267,10 +293,12 @@ export default function AssignmentSolveQuestionPage() {
           ) : (
             <div className="submit-summary-text">
               <span className="passed">
-                ✅ Passed: <strong>{result.passed}/{result.total}</strong>
+                ✅ Passed:{" "}
+                <strong>{result.passed}/{result.total}</strong>
               </span>
               <span className="failed">
-                ❌ Failed: <strong>{failedCount}/{result.total}</strong>
+                ❌ Failed:{" "}
+                <strong>{failedCount}/{result.total}</strong>
               </span>
             </div>
           )}

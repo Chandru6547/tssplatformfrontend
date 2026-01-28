@@ -9,6 +9,7 @@ export default function AssignmentSolvePage() {
   const { assignmentId } = useParams();
   const navigate = useNavigate();
   const containerRef = useRef(null);
+  const studentId = getUserId(); // ✅ IMPORTANT
 
   const [assignment, setAssignment] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -66,8 +67,11 @@ export default function AssignmentSolvePage() {
         const data = await res.json();
         setAssignment(data);
 
-        const key = `assignment_completed_questions_${assignmentId}`;
-        setCompletedQuestions(JSON.parse(localStorage.getItem(key)) || []);
+        // ✅ STUDENT-SCOPED COMPLETED QUESTIONS
+        const key = `assignment_completed_questions_${assignmentId}_${studentId}`;
+        setCompletedQuestions(
+          JSON.parse(localStorage.getItem(key)) || []
+        );
       } catch (err) {
         console.error(err);
       } finally {
@@ -76,7 +80,7 @@ export default function AssignmentSolvePage() {
     }
 
     fetchAssignment();
-  }, [assignmentId, navigate]);
+  }, [assignmentId, studentId, navigate]);
 
   /* ---------- SUBMIT ASSIGNMENT ---------- */
   const submitAssignment = async () => {
@@ -93,7 +97,7 @@ export default function AssignmentSolvePage() {
           },
           body: JSON.stringify({
             assignmentId,
-            studentId: getUserId(),
+            studentId,
             solvedQuestions: completedQuestions,
             isFinalSubmisison: true
           })
@@ -108,10 +112,8 @@ export default function AssignmentSolvePage() {
 
       if (!res.ok) throw new Error("Submit failed");
 
-      clearAssignmentTimer(assignmentId);
-      // localStorage.removeItem(
-      //   `assignment_completed_questions_${assignmentId}`
-      // );
+      // ✅ CLEAR TIMER PER STUDENT
+      clearAssignmentTimer(assignmentId, studentId);
 
       setSubmitted(true);
 
@@ -125,7 +127,7 @@ export default function AssignmentSolvePage() {
     }
   };
 
-  /* ---------- FULLSCREEN + NAVIGATE (Solve Button) ---------- */
+  /* ---------- FULLSCREEN + NAVIGATE ---------- */
   const goFullscreenAndNavigate = async (path) => {
     await enterFullscreen();
     navigate(path);
@@ -165,7 +167,10 @@ export default function AssignmentSolvePage() {
             Due: {new Date(assignment.dueDate).toLocaleDateString()}
           </span>
 
-          <button className="end-test-btn" onClick={() => setShowModal(true)}>
+          <button
+            className="end-test-btn"
+            onClick={() => setShowModal(true)}
+          >
             End Test
           </button>
         </div>

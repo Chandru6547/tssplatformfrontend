@@ -168,3 +168,57 @@
 .submit-summary-text .failed {
   color: #b91c1c;
 }
+
+/* ================= MOBILE VIEW ================= */
+@media (max-width: 768px) {
+  .assignment-layout {
+    display: flex;
+    flex-direction: column;
+    height: auto;
+  }
+
+  /* QUESTION ON TOP */
+  .assignment-left {
+    width: 100%;
+    height: auto;
+    border-right: none;
+    border-bottom: 1px solid #e5e7eb;
+    padding: 16px;
+  }
+
+  /* COMPILER AT BOTTOM */
+  .assignment-right {
+    width: 100%;
+    height: 100%;
+  }
+
+  .editor-header {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .editor-wrapper {
+    height: 55vh; /* editor stays usable */
+  }
+
+  .editor-actions {
+    position: sticky;
+    bottom: 0;
+    background: #ffffff;
+    z-index: 10;
+  }
+
+  /* RESULT TABLE SCROLL */
+  .result-container {
+    margin: 12px;
+    overflow-x: auto;
+  }
+
+  .result-table {
+    font-size: 13px;
+  }
+
+  .question-header h1 {
+    font-size: 18px;
+  }
+}

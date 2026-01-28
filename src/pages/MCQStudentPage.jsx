@@ -12,36 +12,39 @@ export default function MCQStudentPage() {
   const studentId = getUserId();
 
   /* ---------- CHECK COMPLETED MCQS ---------- */
-  const checkCompletedMCQs = useCallback(async (mcqList) => {
-    try {
-      const requests = mcqList.map(mcq =>
-        fetch(
-          `${process.env.REACT_APP_API_BASE_URL}/api/mcq-submissions/student/${studentId}/mcq/${mcq._id}`,
-          {
-            headers: {
-              Authorization: `Bearer ${getToken()}`
+  const checkCompletedMCQs = useCallback(
+    async (mcqList) => {
+      try {
+        const requests = mcqList.map((mcq) =>
+          fetch(
+            `${process.env.REACT_APP_API_BASE_URL}/api/mcq-submissions/student/${studentId}/mcq/${mcq._id}`,
+            {
+              headers: {
+                Authorization: `Bearer ${getToken()}`
+              }
             }
-          }
-        )
-          .then(res => res.json())
-          .then(data => ({
-            mcqId: mcq._id,
-            completed: Array.isArray(data) && data.length > 0
-          }))
-      );
+          )
+            .then((res) => res.json())
+            .then((data) => ({
+              mcqId: mcq._id,
+              completed: Array.isArray(data) && data.length > 0
+            }))
+        );
 
-      const results = await Promise.all(requests);
+        const results = await Promise.all(requests);
+        const statusMap = {};
 
-      const statusMap = {};
-      results.forEach(r => {
-        statusMap[r.mcqId] = r.completed;
-      });
+        results.forEach((r) => {
+          statusMap[r.mcqId] = r.completed;
+        });
 
-      setCompletedMap(statusMap);
-    } catch (err) {
-      console.error("Failed to check MCQ completion", err);
-    }
-  }, [studentId]);
+        setCompletedMap(statusMap);
+      } catch (err) {
+        console.error("Failed to check MCQ completion", err);
+      }
+    },
+    [studentId]
+  );
 
   /* ---------- FETCH MCQS ---------- */
   const fetchMCQs = useCallback(async () => {
@@ -101,7 +104,9 @@ export default function MCQStudentPage() {
         <p className="loader-text">
           Loading MCQs
           <span className="dots">
-            <i>.</i><i>.</i><i>.</i>
+            <i>.</i>
+            <i>.</i>
+            <i>.</i>
           </span>
         </p>
       </div>
@@ -124,7 +129,7 @@ export default function MCQStudentPage() {
         </div>
       ) : (
         <div className="course-grid">
-          {mcqs.map(mcq => {
+          {mcqs.map((mcq) => {
             const isCompleted = completedMap[mcq._id];
 
             return (
@@ -149,6 +154,13 @@ export default function MCQStudentPage() {
               </div>
             );
           })}
+
+          {/* ---------- GHOST CARDS TO MAINTAIN 3 PER ROW ---------- */}
+          {Array.from({
+            length: (3 - (mcqs.length % 3)) % 3
+          }).map((_, index) => (
+            <div key={`ghost-${index}`} className="course-card ghost-card" />
+          ))}
         </div>
       )}
     </div>
