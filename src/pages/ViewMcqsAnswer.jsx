@@ -67,7 +67,7 @@ export default function ViewMcqsAnswer() {
 
     const last = submissions[0];
     const hours = (Date.now() - new Date(last.createdAt)) / 36e5;
-    if (hours < 24) return alert("Answers unlock after 24 hours");
+    if (hours < 120) return alert("Answers unlock after 24 hours");
 
     setSubmission(last);
     setQuestions(mcq.questions);
