@@ -48,6 +48,8 @@ import StaffAssignmentList from "./pages/StaffAssignmentList";
 import StaffMCQList from "./pages/StaffMCQList";
 import AssignmentReportPage from "./pages/AssignmentReportPage";
 import MCQReportPageStaff from "./pages/MCQReportPageStaff";
+import CreateStaffPage from "./pages/StaffManagementPage";
+import TSSCurriculumDashboard from "./pages/TSSCurriculumDashboard";
 import "./App.css";
 import { getRole } from "./utils/auth";
 
@@ -227,6 +229,9 @@ export default function App() {
               <Route path="/staff/mcqs" element={<StaffMCQList />} />
               <Route path="/staff/assignment-report" element={<AssignmentReportPage />} />
               <Route path="/staff/mcq-report" element={<MCQReportPageStaff />} />
+              <Route path="/create-staff" element={<CreateStaffPage />} />
+              <Route path="/tss-curriculum-dashboard" element={<TSSCurriculumDashboard />} />
+
               <Route
                 path="/assignments/viewall" 
                 element={

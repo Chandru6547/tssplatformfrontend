@@ -129,94 +129,108 @@ export default function AssignCourseOrMcq() {
     }
   }, [assignType]);
 
-  /* ---------- ASSIGN TO BATCH ---------- */
-  const handleAssign = async () => {
-    if (!assignType || !selectedItem) {
-      setMessage("❌ Please select assign type and item");
-      return;
-    }
+  /* ---------- ASSIGN TO BATCH ---------- */const handleAssign = async () => {
+  if (!assignType || !selectedItem) {
+    setMessage("❌ Please select assign type and item");
+    return;
+  }
 
-    if (students.length === 0) {
-      setMessage("❌ No students found in selected batches");
-      return;
-    }
+  if (students.length === 0) {
+    setMessage("❌ No students found in selected batches");
+    return;
+  }
 
-    setLoading(true);
-    setMessage(`Assigning to ${students.length} students...`);
+  setLoading(true);
+  setMessage(`Assigning to ${students.length} students...`);
 
-    let endpoint = "";
-    let payloadBuilder = null;
+  let studentEndpoint = "";
+  let studentPayload = null;
 
-    /* ---------- STUDENT ENDPOINTS ---------- */
+  /* ---------- STUDENT ASSIGN ---------- */
+  if (assignType === "course") {
+    studentEndpoint = "/addCourse";
+    studentPayload = email => ({ email, course: selectedItem });
+  }
+
+  if (assignType === "mcq") {
+    studentEndpoint = "/addMcq";
+    studentPayload = email => ({ email, mcq: selectedItem });
+  }
+
+  if (assignType === "assignment") {
+    studentEndpoint = "/addAssignmentToUser";
+    studentPayload = email => ({ email, assignmentId: selectedItem });
+  }
+
+  /* ---------- ASSIGN TO STUDENTS ---------- */
+  for (const student of students) {
+    await fetch(`${API_BASE}${studentEndpoint}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(studentPayload(student.email))
+    });
+  }
+
+  /* ---------- ASSIGN TO STAFF (ONCE) ---------- */
+  if (assignType === "course") {
+    await fetch(`${API_BASE}/api/staff/addCourse`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ college: campus, course: selectedItem })
+    });
+  }
+
+  if (assignType === "mcq") {
+    await fetch(`${API_BASE}/api/staff/addMcq`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ college: campus, mcq: selectedItem })
+    });
+  }
+
+  if (assignType === "assignment") {
+    await fetch(`${API_BASE}/api/staff/addAssignment`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ college: campus, assignmentId: selectedItem })
+    });
+  }
+
+  /* ---------- 🔥 ASSIGN TO CURRICULUM (PER BATCH) ---------- */
+  for (const batch of selectedBatches) {
+    let curriculumEndpoint = "";
+    let curriculumPayload = {
+      college: campus,
+      year,
+      batch
+    };
+
     if (assignType === "course") {
-      endpoint = "/addCourse";
-      payloadBuilder = email => ({ email, course: selectedItem });
+      curriculumEndpoint = "/api/curriculum/addCourse";
+      curriculumPayload.course = selectedItem;
     }
 
     if (assignType === "mcq") {
-      endpoint = "/addMcq";
-      payloadBuilder = email => ({ email, mcq: selectedItem });
+      curriculumEndpoint = "/api/curriculum/addMCQ";
+      curriculumPayload.mcq = selectedItem;
     }
 
     if (assignType === "assignment") {
-      endpoint = "/addAssignmentToUser";
-      payloadBuilder = email => ({ email, assignmentId: selectedItem });
+      curriculumEndpoint = "/api/curriculum/addAssignment";
+      curriculumPayload.assignment = selectedItem;
     }
 
-    /* ---------- ASSIGN TO STUDENTS ---------- */
-    for (const student of students) {
-      try {
-        await fetch(`${API_BASE}${endpoint}`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payloadBuilder(student.email))
-        });
-      } catch (err) {
-        console.error("Assignment failed for", student.email);
-      }
-    }
+    await fetch(`${API_BASE}${curriculumEndpoint}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(curriculumPayload)
+    });
+  }
 
-    /* ---------- ASSIGN TO STAFF (ONCE) ---------- */
-    try {
-      if (assignType === "course") {
-        await fetch(`${API_BASE}/api/staff/addCourse`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            college: campus,
-            course: selectedItem
-          })
-        });
-      }
+  setMessage("✅ Assigned to Students, Staff & Curriculum successfully");
+  setLoading(false);
+};
 
-      if (assignType === "mcq") {
-        await fetch(`${API_BASE}/api/staff/addMcq`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            college: campus,
-            mcq: selectedItem
-          })
-        });
-      }
-
-      if (assignType === "assignment") {
-        await fetch(`${API_BASE}/api/staff/addAssignment`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            college: campus,
-            assignmentId: selectedItem
-          })
-        });
-      }
-    } catch (err) {
-      console.error("Staff assignment failed", err);
-    }
-
-    setMessage("✅ Assigned successfully to students & staff");
-    setLoading(false);
-  };
 
   return (
     <div className="student-container">

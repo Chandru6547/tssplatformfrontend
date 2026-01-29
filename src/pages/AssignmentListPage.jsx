@@ -9,7 +9,6 @@ export default function AssignmentListPage() {
   const [assignments, setAssignments] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  /* ---------------- FETCH ASSIGNMENTS ---------------- */
   useEffect(() => {
     async function fetchAssignments() {
       try {
@@ -41,50 +40,84 @@ export default function AssignmentListPage() {
   }, [navigate]);
 
   if (loading) {
-    return <div className="page-loader">Loading assignments...</div>;
+    return <div className="page-loader">Loading assignments…</div>;
   }
 
   return (
     <div className="assignment-list-page">
+      {/* ---------- HEADER ---------- */}
       <div className="page-header">
-        <h2>Assignments</h2>
+        <div>
+          <h2>Assignments</h2>
+          <p className="subtitle">
+            Create, manage and review assignments for students
+          </p>
+        </div>
+
         <button
-          className="primary-btn"
+          className="primary-btn-create-assignment"
           onClick={() => navigate("/assignments/create")}
         >
           + Create Assignment
         </button>
       </div>
 
+      {/* ---------- EMPTY ---------- */}
       {assignments.length === 0 ? (
-        <div className="empty-state">No assignments found</div>
+        <div className="empty-state">
+          <h3>No Assignments Yet</h3>
+          <p>Start by creating your first assignment.</p>
+          <button
+            className="primary-btn"
+            onClick={() => navigate("/assignments/create")}
+          >
+            Create Assignment
+          </button>
+        </div>
       ) : (
-        <div className="assignment-table">
-          <div className="table-header">
-            <span>Name</span>
-            <span>Due Date</span>
-            <span>Questions</span>
-            <span>Actions</span>
-          </div>
+        /* ---------- GRID ---------- */
+        <div className="assignment-grid">
+          {assignments.map((a) => {
+            const dueDate = new Date(a.dueDate);
+            const isOverdue = dueDate < new Date();
 
-          {assignments.map((a) => (
-            <div key={a._id} className="table-row">
-              <span className="name">{a.name}</span>
-              <span>
-                {new Date(a.dueDate).toLocaleDateString()}
-              </span>
-              <span>{a.questions?.length || 0}</span>
-              <span className="actions">
-                <button
-                  onClick={() =>
-                    navigate(`/assignments/${a._id}`)
-                  }
-                >
-                  View
-                </button>
-              </span>
-            </div>
-          ))}
+            return (
+              <div key={a._id} className="assignment-card">
+                <div className="card-top">
+                  <h3>{a.name}</h3>
+                  <span
+                    className={`status ${
+                      isOverdue ? "overdue" : "active"
+                    }`}
+                  >
+                    {isOverdue ? "Overdue" : "Upcoming"}
+                  </span>
+                </div>
+
+                <div className="card-info">
+                  <div>
+                    <label>Due Date</label>
+                    <span>{dueDate.toLocaleDateString()}</span>
+                  </div>
+                  <div>
+                    <label>Questions</label>
+                    <span>{a.questions?.length || 0}</span>
+                  </div>
+                </div>
+
+                <div className="card-actions">
+                  <button
+                    className="outline-btn"
+                    onClick={() =>
+                      navigate(`/assignments/${a._id}`)
+                    }
+                  >
+                    View Details
+                  </button>
+                </div>
+              </div>
+            );
+          })}
         </div>
       )}
     </div>

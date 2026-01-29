@@ -2,23 +2,28 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 import {
   FaCode,
   FaBookOpen,
-  FaQuestionCircle,
+  FaListAlt,
   FaRobot,
   FaFileAlt,
-  FaCalendarAlt,
-  FaTrophy,
-  FaTasks,
-  FaPlusSquare,
-  FaUpload,
-  FaChartLine,
-  FaSignOutAlt,
-  FaUserPlus,
-  FaSitemap,
-  FaUsers,
-  FaLifeRing,
+  FaCalendarCheck,
+  FaMedal,
   FaClipboardList,
-  FaBookReader,
   FaClipboardCheck,
+  FaPlusCircle,
+  FaCloudUploadAlt,
+  FaChartPie,
+  FaSignOutAlt,
+  FaUserGraduate,
+  FaChalkboardTeacher,
+  FaProjectDiagram,
+  FaUsers,
+  FaHeadset,
+  FaUserClock,
+  FaInbox,
+  FaBookReader,
+  FaLayerGroup,
+  FaChartBar,
+  FaGraduationCap
 } from "react-icons/fa";
 
 import { getEmail, logout, isAuthenticated, getRole } from "../utils/auth";
@@ -41,7 +46,7 @@ export default function Navbar() {
     <aside className="navbar">
       {/* ---------- HEADER ---------- */}
       <div className="navbar-header">
-        <span className="logo-icon">⚡</span>
+        <FaGraduationCap className="logo-icon" />
         <span className="logo-text">TSS Student&apos;s Hub</span>
       </div>
 
@@ -53,7 +58,7 @@ export default function Navbar() {
             to="/select-assessment"
             className={`nav-item ${isActive("/select-assessment")}`}
           >
-            <FaTasks />
+            <FaChartBar />
             <span>View Report</span>
           </Link>
         )}
@@ -75,7 +80,7 @@ export default function Navbar() {
               to="/mcqs/student"
               className={`nav-item ${isActive("/mcqs")}`}
             >
-              <FaQuestionCircle />
+              <FaListAlt />
               <span>MCQs</span>
             </Link>
 
@@ -98,12 +103,12 @@ export default function Navbar() {
             </Link>
 
             <Link to="/comingsoon" className="nav-item">
-              <FaCalendarAlt />
+              <FaCalendarCheck />
               <span>Meeting Scheduler</span>
             </Link>
 
             <Link to="/comingsoon" className="nav-item">
-              <FaTrophy />
+              <FaMedal />
               <span>Contest</span>
             </Link>
 
@@ -111,7 +116,7 @@ export default function Navbar() {
               to="/assignment-student"
               className={`nav-item ${isActive("/assignment-student")}`}
             >
-              <FaTasks />
+              <FaClipboardList />
               <span>Assignments</span>
             </Link>
 
@@ -119,7 +124,7 @@ export default function Navbar() {
               to="/raise-ticket"
               className={`nav-item ${isActive("/raise-ticket")}`}
             >
-              <FaLifeRing />
+              <FaHeadset />
               <span>Raise a Ticket</span>
             </Link>
 
@@ -129,7 +134,7 @@ export default function Navbar() {
               rel="noopener noreferrer"
               className="nav-item"
             >
-              <FaChartLine />
+              <FaUserClock />
               <span>Student Tracker</span>
             </a>
           </>
@@ -149,7 +154,7 @@ export default function Navbar() {
             </Link>
 
             <Link to="/mcqs" className={`nav-item ${isActive("/mcqs")}`}>
-              <FaQuestionCircle />
+              <FaListAlt />
               <span>MCQs</span>
             </Link>
 
@@ -157,7 +162,7 @@ export default function Navbar() {
               to="/mcqs/create"
               className={`nav-item ${isActive("/mcqs/create")}`}
             >
-              <FaPlusSquare />
+              <FaPlusCircle />
               <span>Create MCQ</span>
             </Link>
 
@@ -165,7 +170,7 @@ export default function Navbar() {
               to="/admin/upload"
               className={`nav-item ${isActive("/admin/upload")}`}
             >
-              <FaUpload />
+              <FaCloudUploadAlt />
               <span>Upload Question</span>
             </Link>
 
@@ -173,7 +178,7 @@ export default function Navbar() {
               to="/admin/reports"
               className={`nav-item ${isActive("/admin/reports")}`}
             >
-              <FaChartLine />
+              <FaChartPie />
               <span>Reports</span>
             </Link>
 
@@ -181,15 +186,23 @@ export default function Navbar() {
               to="/create-student"
               className={`nav-item ${isActive("/create-student")}`}
             >
-              <FaUserPlus />
+              <FaUserGraduate />
               <span>Student Creation</span>
+            </Link>
+
+            <Link
+              to="/create-staff"
+              className={`nav-item ${isActive("/create-staff")}`}
+            >
+              <FaChalkboardTeacher />
+              <span>Create Staff</span>
             </Link>
 
             <Link
               to="/manage-curriculam"
               className={`nav-item ${isActive("/manage-curriculam")}`}
             >
-              <FaSitemap />
+              <FaProjectDiagram />
               <span>Manage Curriculum</span>
             </Link>
 
@@ -205,7 +218,7 @@ export default function Navbar() {
               to="/assignments/viewall"
               className={`nav-item ${isActive("/assignments/viewall")}`}
             >
-              <FaTasks />
+              <FaClipboardCheck />
               <span>View Assignments</span>
             </Link>
 
@@ -221,7 +234,7 @@ export default function Navbar() {
               to="/view-all-tickets"
               className={`nav-item ${isActive("/view-all-tickets")}`}
             >
-              <FaLifeRing />
+              <FaInbox />
               <span>View Tickets</span>
             </Link>
 
@@ -231,6 +244,14 @@ export default function Navbar() {
             >
               <FaBookReader />
               <span>TSS Library</span>
+            </Link>
+
+            <Link
+              to="/tss-curriculum-dashboard"
+              className={`nav-item ${isActive("/tss-curriculum-dashboard")}`}
+            >
+              <FaLayerGroup />
+              <span>TSS Curriculum</span>
             </Link>
           </>
         )}
