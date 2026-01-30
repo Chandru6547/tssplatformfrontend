@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import Quill from "quill";
 import "quill/dist/quill.snow.css";
+import swal from "sweetalert";
 import "./QuestionUploadPage.css";
 import { getToken, logout } from "../utils/auth";
 
@@ -29,7 +30,6 @@ export default function QuestionUploadPage() {
 
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
-  const [showPopup, setShowPopup] = useState(false);
 
   /* ---------------- QUILL INIT ---------------- */
   useEffect(() => {
@@ -72,7 +72,7 @@ export default function QuestionUploadPage() {
     }
   };
 
-  /* ---------------- FETCH QUESTION FOR EDITING ---------------- */
+  /* ---------------- FETCH QUESTION FOR EDIT ---------------- */
   useEffect(() => {
     if (!questionId) return;
 
@@ -162,7 +162,15 @@ export default function QuestionUploadPage() {
 
   /* ---------------- SUBMIT ---------------- */
   const submit = async () => {
-    if (!validate()) return;
+    if (!validate()) {
+      return swal({
+        title: "Validation Error",
+        text: "Please fix the highlighted errors before submitting.",
+        icon: "warning",
+        button: "OK"
+      });
+    }
+
     setLoading(true);
 
     try {
@@ -196,18 +204,25 @@ export default function QuestionUploadPage() {
         return;
       }
 
-      if (!res.ok) throw new Error("Failed");
+      if (!res.ok) throw new Error();
 
-      setShowPopup(true);
+      await swal({
+        title: `Question ${isEditing ? "Updated" : "Created"} ✅`,
+        text: "Your question has been saved successfully.",
+        icon: "success",
+        button: "OK"
+      });
 
-      /* RESET ONLY AFTER CREATE */
-      if (!questionId) {
+      if (!isEditing) {
         resetForm();
       }
     } catch (err) {
-      alert(
-        `Error ${questionId ? "updating" : "creating"} question`
-      );
+      swal({
+        title: "Failed",
+        text: `Error ${questionId ? "updating" : "creating"} question.`,
+        icon: "error",
+        button: "Retry"
+      });
       console.error(err);
     } finally {
       setLoading(false);
@@ -218,19 +233,21 @@ export default function QuestionUploadPage() {
   return (
     <div className="page-root">
       <div className="main-card">
-        <h2 className="page-heading">Create Question</h2>
+        <h2 className="page-heading">
+          {questionId ? "Edit Question" : "Create Question"}
+        </h2>
 
+        {/* ---- Title ---- */}
         <div className="form-group">
           <label>Title</label>
           <input
             value={title}
             onChange={e => setTitle(e.target.value)}
           />
-          {errors.title && (
-            <p className="error-text">{errors.title}</p>
-          )}
+          {errors.title && <p className="error-text">{errors.title}</p>}
         </div>
 
+        {/* ---- Course ---- */}
         <div className="form-group">
           <label>Course</label>
           <select
@@ -244,11 +261,10 @@ export default function QuestionUploadPage() {
               </option>
             ))}
           </select>
-          {errors.courseId && (
-            <p className="error-text">{errors.courseId}</p>
-          )}
+          {errors.courseId && <p className="error-text">{errors.courseId}</p>}
         </div>
 
+        {/* ---- Category ---- */}
         <div className="form-group">
           <label>Category</label>
           <select
@@ -268,6 +284,7 @@ export default function QuestionUploadPage() {
           )}
         </div>
 
+        {/* ---- Difficulty ---- */}
         <div className="form-group">
           <label>Difficulty</label>
           <select
@@ -280,6 +297,7 @@ export default function QuestionUploadPage() {
           </select>
         </div>
 
+        {/* ---- Description ---- */}
         <div className="form-group">
           <label>Description</label>
           <div ref={quillContainerRef} className="quill-box" />
@@ -288,6 +306,7 @@ export default function QuestionUploadPage() {
           )}
         </div>
 
+        {/* ---- Sample Testcases ---- */}
         <div className="section-title">Sample Testcases</div>
         {sampleTestcases.map((t, i) => (
           <div className="testcase-row" key={i}>
@@ -295,48 +314,32 @@ export default function QuestionUploadPage() {
               placeholder="Input"
               value={t.input}
               onChange={e =>
-                update(
-                  sampleTestcases,
-                  setSampleTestcases,
-                  i,
-                  "input",
-                  e.target.value
-                )
+                update(sampleTestcases, setSampleTestcases, i, "input", e.target.value)
               }
             />
             <textarea
               placeholder="Output"
               value={t.output}
               onChange={e =>
-                update(
-                  sampleTestcases,
-                  setSampleTestcases,
-                  i,
-                  "output",
-                  e.target.value
-                )
+                update(sampleTestcases, setSampleTestcases, i, "output", e.target.value)
               }
             />
           </div>
         ))}
         {errors.sampleTestcases && (
-          <p className="error-text">
-            {errors.sampleTestcases}
-          </p>
+          <p className="error-text">{errors.sampleTestcases}</p>
         )}
 
         <button
           className="link-btn"
           onClick={() =>
-            setSampleTestcases([
-              ...sampleTestcases,
-              { input: "", output: "" }
-            ])
+            setSampleTestcases([...sampleTestcases, { input: "", output: "" }])
           }
         >
           Add Sample Testcase
         </button>
 
+        {/* ---- Hidden Testcases ---- */}
         <div className="section-title">Hidden Testcases</div>
         {hiddenTestcases.map((t, i) => (
           <div className="testcase-row" key={i}>
@@ -344,48 +347,32 @@ export default function QuestionUploadPage() {
               placeholder="Input"
               value={t.input}
               onChange={e =>
-                update(
-                  hiddenTestcases,
-                  setHiddenTestcases,
-                  i,
-                  "input",
-                  e.target.value
-                )
+                update(hiddenTestcases, setHiddenTestcases, i, "input", e.target.value)
               }
             />
             <textarea
               placeholder="Output"
               value={t.output}
               onChange={e =>
-                update(
-                  hiddenTestcases,
-                  setHiddenTestcases,
-                  i,
-                  "output",
-                  e.target.value
-                )
+                update(hiddenTestcases, setHiddenTestcases, i, "output", e.target.value)
               }
             />
           </div>
         ))}
         {errors.hiddenTestcases && (
-          <p className="error-text">
-            {errors.hiddenTestcases}
-          </p>
+          <p className="error-text">{errors.hiddenTestcases}</p>
         )}
 
         <button
           className="link-btn"
           onClick={() =>
-            setHiddenTestcases([
-              ...hiddenTestcases,
-              { input: "", output: "" }
-            ])
+            setHiddenTestcases([...hiddenTestcases, { input: "", output: "" }])
           }
         >
           Add Hidden Testcase
         </button>
 
+        {/* ---- Submit ---- */}
         <div className="footer">
           <button
             className="primary-btn"
@@ -402,23 +389,6 @@ export default function QuestionUploadPage() {
           </button>
         </div>
       </div>
-
-      {showPopup && (
-        <div className="popup-overlay">
-          <div className="popup-card">
-            <h3>
-              ✅ Question {questionId ? "Updated" : "Created"}
-            </h3>
-            <p>Your question has been successfully saved.</p>
-            <button
-              className="primary-btn"
-              onClick={() => setShowPopup(false)}
-            >
-              OK
-            </button>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

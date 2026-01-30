@@ -18,7 +18,7 @@ import {
   FaProjectDiagram,
   FaUsers,
   FaHeadset,
-  FaUserClock,
+  // FaUserClock,
   FaInbox,
   FaBookReader,
   FaLayerGroup,
@@ -26,7 +26,7 @@ import {
   FaGraduationCap
 } from "react-icons/fa";
 
-import { getEmail, logout, isAuthenticated, getRole } from "../utils/auth";
+import { logout, isAuthenticated, getRole } from "../utils/auth";
 import "./Navbar.css";
 
 export default function Navbar() {
@@ -47,7 +47,9 @@ export default function Navbar() {
       {/* ---------- HEADER ---------- */}
       <div className="navbar-header">
         <FaGraduationCap className="logo-icon" />
-        <span className="logo-text">TSS Student&apos;s Hub</span>
+        <span className="logo-text">
+          ⚡ TSS Student&apos;s Hub
+        </span>
       </div>
 
       {/* ---------- MENU ---------- */}
@@ -128,15 +130,13 @@ export default function Navbar() {
               <span>Raise a Ticket</span>
             </Link>
 
-            <a
-              href={`https://workflow.teamtechsign.in?apikey=APIKEY-TSS-STUDENT-TRACKER-9f8a7b6c5d4e?useremail=${getEmail()}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="nav-item"
+           <Link
+              to="/student-tracker"
+              className={`nav-item ${isActive("/student-tracker")}`}
             >
-              <FaUserClock />
+              <FaHeadset />
               <span>Student Tracker</span>
-            </a>
+            </Link>
           </>
         )}
 
@@ -252,6 +252,13 @@ export default function Navbar() {
             >
               <FaLayerGroup />
               <span>TSS Curriculum</span>
+            </Link>
+            <Link
+              to="/tss-tracker"
+              className={`nav-item ${isActive("/tss-tracker")}`}
+            >
+              <FaLayerGroup />
+              <span>TSS Tracker</span>
             </Link>
           </>
         )}

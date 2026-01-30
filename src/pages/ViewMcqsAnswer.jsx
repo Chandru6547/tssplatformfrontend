@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import swal from "sweetalert";
 import { getToken, getUserId, getEmail } from "../utils/auth";
 import "./ViewMcqsAnswer.css";
 
@@ -19,20 +20,28 @@ export default function ViewMcqsAnswer() {
   /* ---------- FETCH MCQS ---------- */
   useEffect(() => {
     async function fetchMcqs() {
-      const res = await fetch(
-        `${process.env.REACT_APP_API_BASE_URL}/api/mcqs/getMcqsDetailForStudent`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${getToken()}`
-          },
-          body: JSON.stringify({ studentId })
-        }
-      );
-      setMcqs(await res.json());
-      setLoading(false);
+      try {
+        const res = await fetch(
+          `${process.env.REACT_APP_API_BASE_URL}/api/mcqs/getMcqsDetailForStudent`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${getToken()}`
+            },
+            body: JSON.stringify({ studentId })
+          }
+        );
+
+        const data = await res.json();
+        setMcqs(data || []);
+      } catch (err) {
+        swal("Error", "Failed to load MCQs", "error");
+      } finally {
+        setLoading(false);
+      }
     }
+
     fetchMcqs();
   }, [studentId]);
 
@@ -50,30 +59,50 @@ export default function ViewMcqsAnswer() {
 
   /* ---------- OPEN MCQ ---------- */
   const openMcq = async (mcq) => {
-    const res = await fetch(
-      `${process.env.REACT_APP_API_BASE_URL}/api/mcq-submissions/getSubmissionForStudentAndMcq`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${getToken()}`
-        },
-        body: JSON.stringify({ studentId, mcqId: mcq._id })
+    try {
+      const res = await fetch(
+        `${process.env.REACT_APP_API_BASE_URL}/api/mcq-submissions/getSubmissionForStudentAndMcq`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${getToken()}`
+          },
+          body: JSON.stringify({ studentId, mcqId: mcq._id })
+        }
+      );
+
+      const submissions = await res.json();
+
+      if (!submissions || !submissions.length) {
+        return swal({
+          title: "Not Attempted",
+          text: "You have not attempted this MCQ yet.",
+          icon: "warning",
+          button: "OK"
+        });
       }
-    );
 
-    const submissions = await res.json();
-    if (!submissions.length) return alert("Not attempted");
+      const last = submissions[0];
+      const hours = (Date.now() - new Date(last.createdAt)) / 36e5;
 
-    const last = submissions[0];
-    const hours = (Date.now() - new Date(last.createdAt)) / 36e5;
-    if (hours < 120) return alert("Answers unlock after 24 hours");
+      if (hours < 120) {
+        return swal({
+          title: "Locked ⏳",
+          text: "MCQ answers will unlock after 120 hours.",
+          icon: "info",
+          button: "Understood"
+        });
+      }
 
-    setSubmission(last);
-    setQuestions(mcq.questions);
-    setIndex(0);
-    setShowExplanation(false);
-    setOpen(true);
+      setSubmission(last);
+      setQuestions(mcq.questions || []);
+      setIndex(0);
+      setShowExplanation(false);
+      setOpen(true);
+    } catch (err) {
+      swal("Error", "Unable to load MCQ answers", "error");
+    }
   };
 
   if (loading) return <div className="page-loader">Loading MCQs…</div>;
@@ -122,9 +151,7 @@ export default function ViewMcqsAnswer() {
 
             <h3>{mcq.topic}</h3>
 
-            <p className="meta">
-              📝 {mcq.questions.length} Questions
-            </p>
+            <p className="meta">📝 {mcq.questions.length} Questions</p>
 
             <button>Review Answers →</button>
           </div>

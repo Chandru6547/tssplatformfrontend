@@ -35,13 +35,21 @@ export default function LoginPage() {
         return;
       }
 
+      // ✅ save auth details immediately
       login(data.token, data.role, data.userId, email);
-      navigate("/");
-      window.location.reload();
-    } catch {
+
+      // ⏳ wait for 3 seconds before redirect
+      setTimeout(() => {
+        navigate("/");
+        window.location.reload();
+      }, 2000);
+
+    } catch (err) {
       setError("Server not reachable");
     } finally {
-      setLoading(false);
+      // ❌ DON'T stop loader here on success
+      // loader should continue until navigation
+      if (error) setLoading(false);
     }
   };
 
@@ -94,7 +102,14 @@ export default function LoginPage() {
             {error && <p className="error">{error}</p>}
 
             <button className="button1" disabled={loading}>
-              {loading ? "Logging in..." : "Login"}
+              {loading ? (
+                <span className="btn-loader">
+                  <span className="spinner" />
+                  Logging in…
+                </span>
+              ) : (
+                "Login"
+              )}
             </button>
           </form>
         </div>

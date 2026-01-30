@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import "./CreateStudent.css";
+import "./AssignCourseOrMcq.css";
 
 const API_BASE = process.env.REACT_APP_API_BASE_URL;
 
@@ -14,8 +14,11 @@ export default function AssignCourseOrMcq() {
   const [year, setYear] = useState("");
   const [selectedBatches, setSelectedBatches] = useState([]);
 
+  /* ---------- MODE ---------- */
+  const [mode, setMode] = useState("assign"); // assign | remove
+
   /* ---------- ASSIGN TYPE ---------- */
-  const [assignType, setAssignType] = useState(""); // course | mcq | assignment
+  const [assignType, setAssignType] = useState("");
   const [courses, setCourses] = useState([]);
   const [mcqs, setMcqs] = useState([]);
   const [assignments, setAssignments] = useState([]);
@@ -24,7 +27,7 @@ export default function AssignCourseOrMcq() {
   /* ---------- STUDENTS ---------- */
   const [students, setStudents] = useState([]);
 
-  /* ---------- UI STATE ---------- */
+  /* ---------- UI ---------- */
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
 
@@ -32,19 +35,16 @@ export default function AssignCourseOrMcq() {
   useEffect(() => {
     fetch(`${API_BASE}/campus/get`)
       .then(res => res.json())
-      .then(setCampuses)
-      .catch(() => setCampuses([]));
+      .then(setCampuses);
   }, []);
 
   /* ---------- FETCH YEARS ---------- */
   useEffect(() => {
     if (!campus) return;
-
     fetch(`${API_BASE}/year/get-by-campus?campus=${encodeURIComponent(campus)}`)
       .then(res => res.json())
       .then(data => {
         setYears(data);
-        setBatches([]);
         setYear("");
         setSelectedBatches([]);
       });
@@ -53,53 +53,38 @@ export default function AssignCourseOrMcq() {
   /* ---------- FETCH BATCHES ---------- */
   useEffect(() => {
     if (!campus || !year) return;
-
     fetch(
       `${API_BASE}/batch/get-by-campus-year?campus=${encodeURIComponent(
         campus
       )}&year=${year}`
     )
       .then(res => res.json())
-      .then(data => {
-        setBatches(data);
-        setSelectedBatches([]);
-      });
+      .then(setBatches);
   }, [campus, year]);
 
-  /* ---------- FETCH STUDENTS (MULTI BATCH) ---------- */
+  /* ---------- FETCH STUDENTS ---------- */
   useEffect(() => {
     if (!campus || !year || selectedBatches.length === 0) return;
 
-    const fetchStudents = async () => {
-      try {
-        let allStudents = [];
-
-        for (const batch of selectedBatches) {
-          const res = await fetch(
-            `${API_BASE}/api/students/students?college=${encodeURIComponent(
-              campus
-            )}&year=${year}&batch=${batch}`
-          );
-
-          const data = await res.json();
-          allStudents.push(...data);
-        }
-
-        /* remove duplicate students by email */
-        const uniqueStudents = Array.from(
-          new Map(allStudents.map(s => [s.email, s])).values()
+    const load = async () => {
+      let all = [];
+      for (const batch of selectedBatches) {
+        const res = await fetch(
+          `${API_BASE}/api/students/students?college=${encodeURIComponent(
+            campus
+          )}&year=${year}&batch=${batch}`
         );
-
-        setStudents(uniqueStudents);
-      } catch (err) {
-        setStudents([]);
+        const data = await res.json();
+        all.push(...data);
       }
+      setStudents(
+        Array.from(new Map(all.map(s => [s.email, s])).values())
+      );
     };
-
-    fetchStudents();
+    load();
   }, [campus, year, selectedBatches]);
 
-  /* ---------- FETCH ITEMS BASED ON ASSIGN TYPE ---------- */
+  /* ---------- FETCH ITEMS ---------- */
   useEffect(() => {
     setSelectedItem("");
 
@@ -107,137 +92,105 @@ export default function AssignCourseOrMcq() {
       fetch(`${API_BASE}/courses/student`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({})
+        body: "{}"
       })
         .then(res => res.json())
-        .then(setCourses)
-        .catch(() => setCourses([]));
+        .then(setCourses);
     }
 
     if (assignType === "mcq") {
       fetch(`${API_BASE}/getAllMCQForAdmin`)
         .then(res => res.json())
-        .then(setMcqs)
-        .catch(() => setMcqs([]));
+        .then(setMcqs);
     }
 
     if (assignType === "assignment") {
       fetch(`${API_BASE}/api/assignments`)
         .then(res => res.json())
-        .then(setAssignments)
-        .catch(() => setAssignments([]));
+        .then(setAssignments);
     }
   }, [assignType]);
 
-  /* ---------- ASSIGN TO BATCH ---------- */const handleAssign = async () => {
-  if (!assignType || !selectedItem) {
-    setMessage("❌ Please select assign type and item");
-    return;
-  }
+  /* ---------- ASSIGN / REMOVE ---------- */
+  const handleSubmit = async () => {
+    if (!assignType || !selectedItem) {
+      setMessage("❌ Select type and item");
+      return;
+    }
 
-  if (students.length === 0) {
-    setMessage("❌ No students found in selected batches");
-    return;
-  }
+    if (students.length === 0) {
+      setMessage("❌ No students found");
+      return;
+    }
 
-  setLoading(true);
-  setMessage(`Assigning to ${students.length} students...`);
+    setLoading(true);
+    setMessage(`${mode === "assign" ? "Assigning" : "Removing"}...`);
 
-  let studentEndpoint = "";
-  let studentPayload = null;
-
-  /* ---------- STUDENT ASSIGN ---------- */
-  if (assignType === "course") {
-    studentEndpoint = "/addCourse";
-    studentPayload = email => ({ email, course: selectedItem });
-  }
-
-  if (assignType === "mcq") {
-    studentEndpoint = "/addMcq";
-    studentPayload = email => ({ email, mcq: selectedItem });
-  }
-
-  if (assignType === "assignment") {
-    studentEndpoint = "/addAssignmentToUser";
-    studentPayload = email => ({ email, assignmentId: selectedItem });
-  }
-
-  /* ---------- ASSIGN TO STUDENTS ---------- */
-  for (const student of students) {
-    await fetch(`${API_BASE}${studentEndpoint}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(studentPayload(student.email))
-    });
-  }
-
-  /* ---------- ASSIGN TO STAFF (ONCE) ---------- */
-  if (assignType === "course") {
-    await fetch(`${API_BASE}/api/staff/addCourse`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ college: campus, course: selectedItem })
-    });
-  }
-
-  if (assignType === "mcq") {
-    await fetch(`${API_BASE}/api/staff/addMcq`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ college: campus, mcq: selectedItem })
-    });
-  }
-
-  if (assignType === "assignment") {
-    await fetch(`${API_BASE}/api/staff/addAssignment`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ college: campus, assignmentId: selectedItem })
-    });
-  }
-
-  /* ---------- 🔥 ASSIGN TO CURRICULUM (PER BATCH) ---------- */
-  for (const batch of selectedBatches) {
-    let curriculumEndpoint = "";
-    let curriculumPayload = {
-      college: campus,
-      year,
-      batch
-    };
+    let endpoint = "";
+    let payload = null;
 
     if (assignType === "course") {
-      curriculumEndpoint = "/api/curriculum/addCourse";
-      curriculumPayload.course = selectedItem;
+      endpoint = mode === "assign" ? "/addCourse" : "/removeCourse";
+      payload = email => ({ email, course: selectedItem });
     }
 
     if (assignType === "mcq") {
-      curriculumEndpoint = "/api/curriculum/addMCQ";
-      curriculumPayload.mcq = selectedItem;
+      endpoint = mode === "assign" ? "/addMcq" : "/removeMcq";
+      payload = email => ({ email, mcq: selectedItem });
     }
 
     if (assignType === "assignment") {
-      curriculumEndpoint = "/api/curriculum/addAssignment";
-      curriculumPayload.assignment = selectedItem;
+      endpoint =
+        mode === "assign"
+          ? "/addAssignmentToUser"
+          : "/removeAssignmentFromUser";
+      payload = email => ({ email, assignmentId: selectedItem });
     }
 
-    await fetch(`${API_BASE}${curriculumEndpoint}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(curriculumPayload)
-    });
-  }
+    for (const s of students) {
+      await fetch(`${API_BASE}${endpoint}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload(s.email))
+      });
+    }
 
-  setMessage("✅ Assigned to Students, Staff & Curriculum successfully");
-  setLoading(false);
-};
-
+    setMessage(`✅ ${mode === "assign" ? "Assigned" : "Removed"} successfully`);
+    setLoading(false);
+  };
 
   return (
-    <div className="student-container">
-      <h2>Assign Course / MCQ / Assignment to Batch</h2>
+    <div className="page-wrapper">
+      <div className="assign-card">
+  <h2 className="card-title">
+    {mode === "assign" ? "Assign Resources" : "Remove Resources"}
+  </h2>
+  <p className="card-subtitle">
+    Assign or remove courses, MCQs, or assignments for selected students
+  </p>
 
-      <div className="student-form">
-        {/* COLLEGE */}
+  <div className="tab-pills">
+    <button
+      className={mode === "assign" ? "active" : ""}
+      onClick={() => setMode("assign")}
+    >
+      Assign
+    </button>
+    <button
+      className={mode === "remove" ? "active" : ""}
+      onClick={() => setMode("remove")}
+    >
+      Remove
+    </button>
+  </div>
+
+  {/* ---------- ACADEMIC FILTER ---------- */}
+  <div className="section">
+    <h4 className="section-title">Academic Filter</h4>
+
+    <div className="form-grid">
+      <div className="field">
+        <label>College</label>
         <select value={campus} onChange={e => setCampus(e.target.value)}>
           <option value="">Select College</option>
           {campuses.map(c => (
@@ -246,13 +199,11 @@ export default function AssignCourseOrMcq() {
             </option>
           ))}
         </select>
+      </div>
 
-        {/* YEAR */}
-        <select
-          value={year}
-          onChange={e => setYear(e.target.value)}
-          disabled={!campus}
-        >
+      <div className="field">
+        <label>Year</label>
+        <select value={year} onChange={e => setYear(e.target.value)}>
           <option value="">Select Year</option>
           {years.map(y => (
             <option key={y._id} value={y.Year || y.year}>
@@ -260,86 +211,119 @@ export default function AssignCourseOrMcq() {
             </option>
           ))}
         </select>
-
-        {/* BATCH CHECKBOXES */}
-        {batches.length > 0 && (
-          <div className="batch-checkbox-group">
-            <p className="label">Select Batches</p>
-
-            {batches.map(b => {
-              const value = b.Batchname || b.batch;
-
-              return (
-                <label key={b._id} className="batch-checkbox">
-                  <input
-                    type="checkbox"
-                    checked={selectedBatches.includes(value)}
-                    onChange={e => {
-                      const checked = e.target.checked;
-                      setSelectedBatches(prev =>
-                        checked
-                          ? [...prev, value]
-                          : prev.filter(v => v !== value)
-                      );
-                    }}
-                  />
-                  {value}
-                </label>
-              );
-            })}
-          </div>
-        )}
-
-        {/* ASSIGN TYPE */}
-        <select value={assignType} onChange={e => setAssignType(e.target.value)}>
-          <option value="">Assign Type</option>
-          <option value="course">Assign Course</option>
-          <option value="mcq">Assign MCQ</option>
-          <option value="assignment">Assign Assignment</option>
-        </select>
-
-        {/* COURSE */}
-        {assignType === "course" && (
-          <select value={selectedItem} onChange={e => setSelectedItem(e.target.value)}>
-            <option value="">Select Course</option>
-            {courses.map(c => (
-              <option key={c._id} value={c._id}>
-                {c.name}
-              </option>
-            ))}
-          </select>
-        )}
-
-        {/* MCQ */}
-        {assignType === "mcq" && (
-          <select value={selectedItem} onChange={e => setSelectedItem(e.target.value)}>
-            <option value="">Select MCQ</option>
-            {mcqs.map(m => (
-              <option key={m._id} value={m._id}>
-                {m.topic} ({m.category})
-              </option>
-            ))}
-          </select>
-        )}
-
-        {/* ASSIGNMENT */}
-        {assignType === "assignment" && (
-          <select value={selectedItem} onChange={e => setSelectedItem(e.target.value)}>
-            <option value="">Select Assignment</option>
-            {assignments.map(a => (
-              <option key={a._id} value={a._id}>
-                {a.name}
-              </option>
-            ))}
-          </select>
-        )}
-
-        <button disabled={loading} onClick={handleAssign}>
-          {loading ? "Assigning..." : "Assign to Selected Batches"}
-        </button>
       </div>
+    </div>
+  </div>
 
-      {message && <p className="message">{message}</p>}
+  {/* ---------- BATCH SELECTION ---------- */}
+  {batches.length > 0 && (
+    <div className="section">
+      <h4 className="section-title">Select Batches</h4>
+      <div className="batch-grid">
+        {batches.map(b => {
+          const val = b.Batchname || b.batch;
+          return (
+            <label
+              key={b._id}
+              className={`batch-pill ${
+                selectedBatches.includes(val) ? "active" : ""
+              }`}
+            >
+              <input
+                type="checkbox"
+                checked={selectedBatches.includes(val)}
+                onChange={e =>
+                  setSelectedBatches(p =>
+                    e.target.checked
+                      ? [...p, val]
+                      : p.filter(x => x !== val)
+                  )
+                }
+              />
+              {val}
+            </label>
+          );
+        })}
+      </div>
+    </div>
+  )}
+
+  {/* ---------- RESOURCE SELECTION ---------- */}
+  <div className="section">
+    <h4 className="section-title">Resource</h4>
+
+    <div className="field">
+      <label>Type</label>
+      <select value={assignType} onChange={e => setAssignType(e.target.value)}>
+        <option value="">Select Type</option>
+        <option value="course">Course</option>
+        <option value="mcq">MCQ</option>
+        <option value="assignment">Assignment</option>
+      </select>
+    </div>
+
+    {assignType === "course" && (
+      <div className="field">
+        <label>Course</label>
+        <select onChange={e => setSelectedItem(e.target.value)}>
+          <option value="">Select Course</option>
+          {courses.map(c => (
+            <option key={c._id} value={c._id}>
+              {c.name}
+            </option>
+          ))}
+        </select>
+      </div>
+    )}
+
+    {assignType === "mcq" && (
+      <div className="field">
+        <label>MCQ</label>
+        <select onChange={e => setSelectedItem(e.target.value)}>
+          <option value="">Select MCQ</option>
+          {mcqs.map(m => (
+            <option key={m._id} value={m._id}>
+              {m.topic}
+            </option>
+          ))}
+        </select>
+      </div>
+    )}
+
+    {assignType === "assignment" && (
+      <div className="field">
+        <label>Assignment</label>
+        <select onChange={e => setSelectedItem(e.target.value)}>
+          <option value="">Select Assignment</option>
+          {assignments.map(a => (
+            <option key={a._id} value={a._id}>
+              {a.name}
+            </option>
+          ))}
+        </select>
+      </div>
+    )}
+  </div>
+
+  <button
+    className="primary-btn"
+    onClick={handleSubmit}
+    disabled={loading}
+  >
+    {loading
+      ? "Processing..."
+      : mode === "assign"
+      ? "Assign Resource"
+      : "Remove Resource"}
+  </button>
+
+  {message && (
+    <div className={`message-box ${message.startsWith("✅") ? "success" : "error"}`}>
+      {message}
+    </div>
+  )}
+</div>
+
     </div>
   );
 }

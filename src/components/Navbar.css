@@ -29,6 +29,8 @@
   white-space: nowrap;
   color: white;
   transition: opacity 0.2s ease;
+  margin-right: 10px;
+  text-align: center;
 }
 
 .navbar:hover .logo-text {

@@ -50,6 +50,8 @@ import AssignmentReportPage from "./pages/AssignmentReportPage";
 import MCQReportPageStaff from "./pages/MCQReportPageStaff";
 import CreateStaffPage from "./pages/StaffManagementPage";
 import TSSCurriculumDashboard from "./pages/TSSCurriculumDashboard";
+import TaskTracker from "./pages/TaskTracker";
+import StudentTaskTracker from "./pages/StudentTaskTracker"
 import "./App.css";
 import { getRole } from "./utils/auth";
 
@@ -304,6 +306,23 @@ export default function App() {
                 </ProtectedRoute>
               }
             />
+            <Route
+              path="/student-tracker"
+              element={
+                <ProtectedRoute>
+                  <StudentTaskTracker />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/tss-tracker"
+              element={
+                <ProtectedRoute>
+                  <TaskTracker />
+                </ProtectedRoute>
+              }
+            />
+            
             <Route
                 path="/view-assignment-report"
                 element={<ViewAssignmentReport />}

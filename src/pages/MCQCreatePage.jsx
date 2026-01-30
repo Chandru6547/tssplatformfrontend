@@ -1,5 +1,6 @@
 import { useState } from "react";
 import * as XLSX from "xlsx";
+import swal from "sweetalert";
 import { createMCQ } from "../api/mcq.api";
 import "./MCQCreatePage.css";
 
@@ -62,7 +63,7 @@ export default function MCQCreatePage() {
       const sheet = workbook.Sheets[workbook.SheetNames[0]];
       const rows = XLSX.utils.sheet_to_json(sheet);
 
-      const excelQuestions = rows.map((row, index) => ({
+      const excelQuestions = rows.map((row) => ({
         question: row.question || "",
         optionA: row.optionA || "",
         optionB: row.optionB || "",
@@ -73,11 +74,23 @@ export default function MCQCreatePage() {
       }));
 
       if (excelQuestions.length === 0) {
-        alert("No valid MCQs found in Excel file");
-        return;
+        return swal({
+          title: "Invalid File",
+          text: "No valid MCQs found in the uploaded Excel file.",
+          icon: "warning",
+          button: "OK"
+        });
       }
 
-      setQuestions(prev => [...prev, ...excelQuestions]);
+      setQuestions((prev) => [...prev, ...excelQuestions]);
+
+      swal({
+        title: "Uploaded Successfully",
+        text: `${excelQuestions.length} MCQs added from Excel.`,
+        icon: "success",
+        timer: 2000,
+        buttons: false
+      });
     };
 
     reader.readAsArrayBuffer(file);
@@ -88,7 +101,7 @@ export default function MCQCreatePage() {
     topic.trim() &&
     category.trim() &&
     questions.every(
-      q =>
+      (q) =>
         q.question &&
         q.optionA &&
         q.optionB &&
@@ -101,12 +114,24 @@ export default function MCQCreatePage() {
   const handleSubmit = async () => {
     try {
       setLoading(true);
-      await createMCQ({ topic, category, questions, duration: Number(duration) });
 
-      alert("MCQ created successfully 🎉");
+      await createMCQ({
+        topic,
+        category,
+        questions,
+        duration: Number(duration)
+      });
+
+      await swal({
+        title: "Success 🎉",
+        text: "MCQ created successfully.",
+        icon: "success",
+        button: "OK"
+      });
 
       setTopic("");
       setCategory("");
+      setDuration(30);
       setQuestions([
         {
           question: "",
@@ -119,7 +144,12 @@ export default function MCQCreatePage() {
         }
       ]);
     } catch (err) {
-      alert("Failed to create MCQ");
+      swal({
+        title: "Failed",
+        text: "Unable to create MCQ. Please try again.",
+        icon: "error",
+        button: "Retry"
+      });
     } finally {
       setLoading(false);
     }
@@ -136,7 +166,7 @@ export default function MCQCreatePage() {
           <input
             placeholder="e.g. Arrays"
             value={topic}
-            onChange={e => setTopic(e.target.value)}
+            onChange={(e) => setTopic(e.target.value)}
           />
         </div>
 
@@ -145,37 +175,38 @@ export default function MCQCreatePage() {
           <input
             placeholder="e.g. DSA"
             value={category}
-            onChange={e => setCategory(e.target.value)}
+            onChange={(e) => setCategory(e.target.value)}
           />
         </div>
+
         <div className="field">
           <label>Duration (minutes)</label>
           <input
             placeholder="30 (in minutes)"
             value={duration}
-            onChange={e => setDuration(e.target.value)}
+            onChange={(e) => setDuration(e.target.value)}
           />
         </div>
       </div>
 
+      {/* Excel Upload */}
       <div className="excel-upload">
         <label>Upload MCQs via Excel (.xlsx)</label>
 
-          <label className="upload-box">
-            📂 Click to upload Excel file
-            <input
-              type="file"
-              accept=".xlsx"
-              onChange={handleExcelUpload}
-            />
-          </label>
+        <label className="upload-box">
+          📂 Click to upload Excel file
+          <input
+            type="file"
+            accept=".xlsx"
+            onChange={handleExcelUpload}
+          />
+        </label>
 
-          <small>
-            Columns required: question, optionA, optionB, optionC, optionD,
-            correctOption, explanation
-          </small>
-        </div>
-
+        <small>
+          Columns required: question, optionA, optionB, optionC, optionD,
+          correctOption, explanation
+        </small>
+      </div>
 
       {/* Questions */}
       {questions.map((q, i) => (
@@ -197,7 +228,9 @@ export default function MCQCreatePage() {
           <textarea
             placeholder="Enter question"
             value={q.question}
-            onChange={e => updateQuestion(i, "question", e.target.value)}
+            onChange={(e) =>
+              updateQuestion(i, "question", e.target.value)
+            }
           />
 
           <div className="options-grid">
@@ -212,7 +245,9 @@ export default function MCQCreatePage() {
               <label>Correct Option</label>
               <select
                 value={q.correctOption}
-                onChange={e => updateQuestion(i, "correctOption", e.target.value)}
+                onChange={(e) =>
+                  updateQuestion(i, "correctOption", e.target.value)
+                }
               >
                 <option value="A">A</option>
                 <option value="B">B</option>
@@ -226,7 +261,9 @@ export default function MCQCreatePage() {
               <input
                 placeholder="Why this is correct?"
                 value={q.explanation}
-                onChange={e => updateQuestion(i, "explanation", e.target.value)}
+                onChange={(e) =>
+                  updateQuestion(i, "explanation", e.target.value)
+                }
               />
             </div>
           </div>
