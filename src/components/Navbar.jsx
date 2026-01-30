@@ -231,6 +231,14 @@ export default function Navbar() {
             </Link>
 
             <Link
+              to="/view-task-submissions"
+              className={`nav-item ${isActive("/view-task-submissions")}`}
+            >
+              <FaUsers />
+              <span>Task Reports</span>
+            </Link>
+
+            <Link
               to="/view-all-tickets"
               className={`nav-item ${isActive("/view-all-tickets")}`}
             >

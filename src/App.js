@@ -52,6 +52,7 @@ import CreateStaffPage from "./pages/StaffManagementPage";
 import TSSCurriculumDashboard from "./pages/TSSCurriculumDashboard";
 import TaskTracker from "./pages/TaskTracker";
 import StudentTaskTracker from "./pages/StudentTaskTracker"
+import TaskSubmissions from "./pages/TaskSubmissions";
 import "./App.css";
 import { getRole } from "./utils/auth";
 
@@ -319,6 +320,14 @@ export default function App() {
               element={
                 <ProtectedRoute>
                   <TaskTracker />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/view-task-submissions"
+              element={
+                <ProtectedRoute>
+                  <TaskSubmissions />
                 </ProtectedRoute>
               }
             />
