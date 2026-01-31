@@ -1,5 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import "./TaskSubmissions.css";
+import TaskSubmissionDashboard from "./TaskSubmissionDashboard";
+import TaskSubmissionCharts from "./TaskSubmissionCharts";
 
 const API = process.env.REACT_APP_API_BASE_URL;
 
@@ -13,15 +15,14 @@ export default function TaskSubmissions() {
   const [college, setCollege] = useState("");
   const [year, setYear] = useState("");
   const [batch, setBatch] = useState("");
-  const [task, setTask] = useState("");
 
+  /* DASHBOARD FILTER */
+  const [dashboardFilter, setDashboardFilter] = useState("");
+
+  /* ================= FETCH ================= */
   useEffect(() => {
     fetchSubmissions();
   }, []);
-
-  useEffect(() => {
-    applyFilters();
-  }, [search, college, year, batch, task, submissions]);
 
   const fetchSubmissions = async () => {
     try {
@@ -40,40 +41,72 @@ export default function TaskSubmissions() {
     }
   };
 
-  /* APPLY FILTERS */
-  const applyFilters = () => {
+  /* ================= APPLY FILTERS ================= */
+  const applyFilters = useCallback(() => {
     let data = [...submissions];
 
-    if (college)
+    if (college) {
       data = data.filter(s => s.studentCollege === college);
+    }
 
-    if (year)
+    if (year) {
       data = data.filter(s => String(s.studentYear) === year);
+    }
 
-    if (batch)
+    if (batch) {
       data = data.filter(s => s.studentBatch === batch);
-
-    if (task)
-      data = data.filter(s => s.taskName === task);
+    }
 
     if (search) {
       const q = search.toLowerCase();
-      data = data.filter(s =>
-        s.studentName?.toLowerCase().includes(q) ||
-        s.taskName?.toLowerCase().includes(q) ||
-        s.studentCollege?.toLowerCase().includes(q) ||
-        s.studentBatch?.toLowerCase().includes(q)
+      data = data.filter(
+        s =>
+          s.studentName?.toLowerCase().includes(q) ||
+          s.taskName?.toLowerCase().includes(q) ||
+          s.studentCollege?.toLowerCase().includes(q) ||
+          s.studentBatch?.toLowerCase().includes(q)
       );
     }
 
-    setFiltered(data);
-  };
+    /* DASHBOARD FILTER */
+    if (dashboardFilter === "completed") {
+      data = data.filter(
+        s => s.taskStatus?.toLowerCase() === "completed"
+      );
+    }
 
-  /* UNIQUE FILTER OPTIONS */
-  const unique = (key) =>
+    if (dashboardFilter === "inprogress") {
+      data = data.filter(
+        s => s.taskStatus?.toLowerCase() === "in-progress"
+      );
+    }
+
+    if (dashboardFilter === "breached") {
+      data = data.filter(s => s.isBreached);
+    }
+
+    setFiltered(data);
+  }, [
+    submissions,
+    college,
+    year,
+    batch,
+    search,
+    dashboardFilter
+  ]);
+
+  /* RUN FILTERS */
+  useEffect(() => {
+    applyFilters();
+  }, [applyFilters]);
+
+  /* UNIQUE OPTIONS */
+  const unique = key =>
     [...new Set(submissions.map(s => s[key]).filter(Boolean))];
 
-  if (loading) return <div className="loading">Loading submissions…</div>;
+  if (loading) {
+    return <div className="loading">Loading submissions…</div>;
+  }
 
   return (
     <div className="task-table-page">
@@ -110,6 +143,18 @@ export default function TaskSubmissions() {
           ))}
         </select>
       </div>
+
+      {/* DASHBOARD */}
+      <TaskSubmissionDashboard
+        data={filtered}
+        activeFilter={dashboardFilter}
+        onFilter={f =>
+          setDashboardFilter(prev => (prev === f ? "" : f))
+        }
+      />
+
+      {/* CHARTS */}
+      <TaskSubmissionCharts data={filtered} />
 
       {/* TABLE */}
       <div className="table-wrapper">
@@ -185,7 +230,7 @@ export default function TaskSubmissions() {
   );
 }
 
-/* DATE FORMAT */
+/* ================= UTIL ================= */
 function formatDate(date) {
   if (!date) return "—";
   return new Date(date).toLocaleString();
